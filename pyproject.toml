@@ -28,7 +28,6 @@ classifiers = [
 keywords = ["file", "decoder", "parquet", "cython"]
 requires-python = ">=3.8"
 dependencies = [
-    "pyarrow>=10.0.0",
 ]
 
 [project.optional-dependencies]
