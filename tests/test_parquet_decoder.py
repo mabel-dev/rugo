@@ -6,6 +6,7 @@ import pytest
 import tempfile
 import io
 import struct
+import urllib.request
 from pathlib import Path
 
 # Import after building
@@ -14,6 +15,59 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 class TestParquetDecoder:
+    
+    @pytest.fixture(scope="session")
+    def test_data_dir(self):
+        """Ensure test data directory exists."""
+        test_data_dir = Path(__file__).parent / "data"
+        test_data_dir.mkdir(exist_ok=True)
+        return test_data_dir
+    
+    @pytest.fixture(scope="session")  
+    def bloom_filter_parquet_file(self, test_data_dir):
+        """Download bloom filter test parquet file if it doesn't exist."""
+        file_path = test_data_dir / "data_index_bloom_encoding_stats.parquet"
+        if not file_path.exists():
+            url = "https://github.com/apache/parquet-testing/raw/master/data/data_index_bloom_encoding_stats.parquet"
+            try:
+                urllib.request.urlretrieve(url, file_path)
+            except Exception as e:
+                pytest.skip(f"Could not download test file: {e}")
+        return file_path
+    
+    @pytest.fixture(scope="session")
+    def plain_parquet_file(self, test_data_dir):
+        """Download plain test parquet file if it doesn't exist."""
+        file_path = test_data_dir / "alltypes_plain.parquet"
+        if not file_path.exists():
+            url = "https://github.com/apache/parquet-testing/raw/master/data/alltypes_plain.parquet"
+            try:
+                urllib.request.urlretrieve(url, file_path)
+            except Exception as e:
+                pytest.skip(f"Could not download test file: {e}")
+        return file_path
+    
+    @pytest.fixture
+    def bloom_filter_parquet_bytes(self, bloom_filter_parquet_file):
+        """Load bloom filter parquet file as bytes."""
+        with open(bloom_filter_parquet_file, 'rb') as f:
+            return f.read()
+    
+    @pytest.fixture
+    def plain_parquet_bytes(self, plain_parquet_file):
+        """Load plain parquet file as bytes."""
+        with open(plain_parquet_file, 'rb') as f:
+            return f.read()
+    
+    @pytest.fixture
+    def bloom_filter_parquet_stream(self, bloom_filter_parquet_bytes):
+        """Create stream from bloom filter parquet bytes."""
+        return io.BytesIO(bloom_filter_parquet_bytes)
+    
+    @pytest.fixture  
+    def plain_parquet_stream(self, plain_parquet_bytes):
+        """Create stream from plain parquet bytes."""
+        return io.BytesIO(plain_parquet_bytes)
     
     @pytest.fixture
     def minimal_parquet_bytes(self):
@@ -41,24 +95,63 @@ class TestParquetDecoder:
         return b"not parquet data"
     
     @pytest.fixture
-    def parquet_stream(self, minimal_parquet_bytes):
-        """Create a parquet stream from minimal bytes."""
-        return io.BytesIO(minimal_parquet_bytes)
+    def parquet_stream(self, plain_parquet_stream):
+        """Use real parquet stream for basic tests."""
+        return plain_parquet_stream
     
     @pytest.fixture
-    def parquet_file(self, minimal_parquet_bytes):
-        """Create a temporary parquet file."""
-        temp_file = tempfile.NamedTemporaryFile(suffix='.parquet', delete=False)
-        temp_file.write(minimal_parquet_bytes)
-        temp_file.close()
+    def parquet_file(self, plain_parquet_file):
+        """Use real parquet file for file path tests."""
+        return str(plain_parquet_file)
+    
+    def test_decoder_with_real_parquet_stream(self, plain_parquet_stream):
+        """Test ParquetDecoder with real parquet stream input."""
+        from rugo.decoders.parquet_decoder import ParquetDecoder
         
-        yield temp_file.name
+        decoder = ParquetDecoder(plain_parquet_stream)
         
-        # Cleanup
-        Path(temp_file.name).unlink(missing_ok=True)
+        # Test metadata loading with real parquet file
+        decoder.load_metadata()
+        metadata = decoder.get_metadata()
+        
+        assert isinstance(metadata, dict)
+        assert 'file_size' in metadata
+        assert 'version' in metadata
+        assert metadata['file_size'] > 0
+        
+        decoder.close()
+    
+    def test_decoder_with_bloom_filter_parquet(self, bloom_filter_parquet_stream):
+        """Test ParquetDecoder with bloom filter parquet file."""
+        from rugo.decoders.parquet_decoder import ParquetDecoder
+        
+        decoder = ParquetDecoder(bloom_filter_parquet_stream)
+        
+        metadata = decoder.get_metadata()
+        assert isinstance(metadata, dict)
+        assert metadata['file_size'] > 0
+        
+        # Test bloom filter methods with real file
+        bloom_filters = decoder.get_bloom_filters('test_column')
+        assert isinstance(bloom_filters, dict)
+        
+        decoder.close()
+    
+    def test_decoder_with_real_parquet_bytes(self, plain_parquet_bytes):
+        """Test ParquetDecoder with real parquet bytes input."""
+        from rugo.decoders.parquet_decoder import ParquetDecoder
+        
+        decoder = ParquetDecoder(plain_parquet_bytes)
+        
+        metadata = decoder.get_metadata()
+        assert isinstance(metadata, dict)
+        assert metadata['file_size'] == len(plain_parquet_bytes)
+        assert metadata['file_size'] > 100  # Real file should be substantial
+        
+        decoder.close()
     
     def test_decoder_with_stream(self, parquet_stream):
-        """Test ParquetDecoder with stream input."""
+        """Test ParquetDecoder with real parquet stream input."""
         from rugo.decoders.parquet_decoder import ParquetDecoder
         
         decoder = ParquetDecoder(parquet_stream)
@@ -70,11 +163,12 @@ class TestParquetDecoder:
         assert isinstance(metadata, dict)
         assert 'file_size' in metadata
         assert 'version' in metadata
+        assert metadata['file_size'] > 100  # Real file should be substantial
         
         decoder.close()
     
-    def test_decoder_with_bytes(self, minimal_parquet_bytes):
-        """Test ParquetDecoder with bytes input."""
+    def test_decoder_with_minimal_bytes(self, minimal_parquet_bytes):
+        """Test ParquetDecoder with minimal parquet bytes input."""
         from rugo.decoders.parquet_decoder import ParquetDecoder
         
         decoder = ParquetDecoder(minimal_parquet_bytes)
@@ -158,8 +252,8 @@ class TestParquetDecoder:
         
         decoder.close()
     
-    def test_convenience_functions(self, parquet_stream, minimal_parquet_bytes, parquet_file):
-        """Test module-level convenience functions."""
+    def test_convenience_functions(self, plain_parquet_stream, plain_parquet_bytes, plain_parquet_file):
+        """Test module-level convenience functions with real parquet files."""
         from rugo.decoders.parquet_decoder import (
             get_parquet_info, 
             get_parquet_statistics,
@@ -167,24 +261,42 @@ class TestParquetDecoder:
         )
         
         # Test with stream
-        info = get_parquet_info(parquet_stream)
+        info = get_parquet_info(plain_parquet_stream)
         assert isinstance(info, dict)
         assert 'file_size' in info
+        assert info['file_size'] > 0
         
         # Test with bytes
-        info = get_parquet_info(minimal_parquet_bytes)
+        info = get_parquet_info(plain_parquet_bytes)
         assert isinstance(info, dict)
+        assert info['file_size'] == len(plain_parquet_bytes)
         
         # Test with file path
-        info = get_parquet_info(parquet_file)
+        info = get_parquet_info(str(plain_parquet_file))
         assert isinstance(info, dict)
         
         # Test statistics function
-        stats = get_parquet_statistics(parquet_stream, 'test_column')
+        stats = get_parquet_statistics(plain_parquet_stream, 'test_column')
         assert isinstance(stats, dict)
         
         # Test bloom filters function
-        bloom_filters = get_parquet_bloom_filters(parquet_stream, 'test_column')
+        bloom_filters = get_parquet_bloom_filters(plain_parquet_stream, 'test_column')
+        assert isinstance(bloom_filters, dict)
+    
+    def test_convenience_functions_with_bloom_filter_file(self, bloom_filter_parquet_stream, bloom_filter_parquet_file):
+        """Test convenience functions specifically with bloom filter parquet file."""
+        from rugo.decoders.parquet_decoder import (
+            get_parquet_info,
+            get_parquet_bloom_filters
+        )
+        
+        # Test info extraction from bloom filter file
+        info = get_parquet_info(bloom_filter_parquet_stream)
+        assert isinstance(info, dict)
+        assert info['file_size'] > 0
+        
+        # Test bloom filter extraction
+        bloom_filters = get_parquet_bloom_filters(str(bloom_filter_parquet_file), 'test_column')
         assert isinstance(bloom_filters, dict)
     
     def test_error_handling(self, invalid_parquet_bytes):
