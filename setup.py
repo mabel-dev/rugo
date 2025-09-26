@@ -3,9 +3,8 @@
 Setup script for rugo - A Cython-based file decoders library
 """
 
-from setuptools import setup, Extension
 from Cython.Build import cythonize
-import os
+from setuptools import Extension, setup
 
 
 def get_extensions():
@@ -14,11 +13,11 @@ def get_extensions():
     
     # Parquet decoder extension
     parquet_ext = Extension(
-        "rugo.decoders.parquet_decoder",
-        sources=["rugo/decoders/parquet_decoder.pyx"],
-        include_dirs=[],  # Removed numpy include
+        "rugo.parquet",
+        sources=["rugo/parquet/metadata_reader.pyx", "rugo/parquet/metadata.cpp"],
+        include_dirs=[],
         language="c++",
-        extra_compile_args=["-O3", "-std=c++11"],
+        extra_compile_args=["-O3", "-std=c++17"],
         extra_link_args=[],
     )
     extensions.append(parquet_ext)
@@ -48,7 +47,3 @@ def main():
         ext_modules=ext_modules,
         zip_safe=False,
     )
-
-
-if __name__ == "__main__":
-    main()

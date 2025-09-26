@@ -5,11 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "rugo"
 version = "0.1.0"
-description = "File decoders library with Cython implementation"
+description = "File decoders library"
 readme = "README.md"
 license = {text = "Apache-2.0"}
 authors = [
-    {name = "Mabel Dev", email = "info@mabel.dev"}
+    {name = "Justin Joyce", email = "justin.joyce@joocer.com"}
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",

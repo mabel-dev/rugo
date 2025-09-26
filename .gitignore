@@ -170,11 +170,7 @@ cython_debug/
 
 # Cython generated files
 *.c
-*.cpp
 *.html
-
-# Test data files
-tests/data/*.parquet
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
