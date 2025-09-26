@@ -50,3 +50,6 @@ packages = ["rugo", "rugo.decoders"]
 
 [tool.setuptools.package-data]
 "*" = ["*.pyx", "*.pxd", "*.pxi"]
+
+[tool.setuptools.package-dir]
+"" = "."

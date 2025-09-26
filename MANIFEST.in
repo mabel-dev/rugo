@@ -6,6 +6,7 @@ recursive-include rugo *.py
 recursive-include rugo *.pyx
 recursive-include rugo *.pxd
 recursive-include rugo *.pxi
+recursive-include examples *.py
 global-exclude *.pyc
 global-exclude __pycache__
 global-exclude *.so
