@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "Cython>=0.29.0", "numpy"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rugo"
+version = "0.1.0"
+description = "File decoders library with Cython implementation"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Mabel Dev", email = "info@mabel.dev"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Cython",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Archiving",
+]
+keywords = ["file", "decoder", "parquet", "cython"]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy",
+    "pyarrow>=10.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0.0",
+    "pytest-cov",
+    "build",
+    "twine",
+]
+
+[project.urls]
+Homepage = "https://github.com/mabel-dev/rugo"
+Repository = "https://github.com/mabel-dev/rugo"
+Issues = "https://github.com/mabel-dev/rugo/issues"
+
+[tool.setuptools]
+packages = ["rugo", "rugo.decoders"]
+
+[tool.setuptools.package-data]
+"*" = ["*.pyx", "*.pxd", "*.pxi"]
