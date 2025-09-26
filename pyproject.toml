@@ -38,6 +38,10 @@ dev = [
     "build",
     "twine",
 ]
+test = [
+    "pytest>=6.0.0",
+    "pytest-cov",
+]
 
 [project.urls]
 Homepage = "https://github.com/mabel-dev/rugo"
@@ -52,3 +56,11 @@ packages = ["rugo", "rugo.decoders"]
 
 [tool.setuptools.package-dir]
 "" = "."
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"

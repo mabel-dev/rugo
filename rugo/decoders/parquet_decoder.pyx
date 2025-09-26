@@ -2,41 +2,53 @@
 # distutils: language = c++
 
 """
-Parquet file decoder implemented in Cython for high-performance parsing.
+Parquet stream decoder implemented in Cython for high-performance parsing.
 
-This module provides functions to decode and parse parquet files efficiently
+This module provides functions to decode and parse parquet data from streams
 using PyArrow as the backend while providing a simplified interface.
 """
 
 import array
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any, Union, BinaryIO
 import pyarrow as pa
 import pyarrow.parquet as pq
 from pathlib import Path
+import io
 
 cdef class ParquetDecoder:
     """
-    High-performance parquet file decoder using Cython and PyArrow.
+    High-performance parquet stream decoder using Cython and PyArrow.
     
-    This class provides efficient methods to read and decode parquet files
+    This class provides efficient methods to read and decode parquet data from streams
     with minimal memory overhead and fast execution.
     """
     
-    cdef object _file_path
+    cdef object _stream
     cdef object _parquet_file
     cdef object _metadata
     cdef bint _file_loaded
     
-    def __cinit__(self, file_path: Union[str, Path]):
+    def __cinit__(self, stream: Union[BinaryIO, bytes, str, Path]):
         """
-        Initialize the ParquetDecoder with a file path.
+        Initialize the ParquetDecoder with a stream or file-like object.
         
         Parameters
         ----------
-        file_path : str or Path
-            Path to the parquet file to decode
+        stream : BinaryIO, bytes, str, or Path
+            Stream, bytes data, or path to the parquet data to decode.
+            If str or Path, it will be opened as a file.
         """
-        self._file_path = Path(file_path)
+        if isinstance(stream, (str, Path)):
+            # Legacy support for file paths - convert to stream
+            with open(stream, 'rb') as f:
+                self._stream = io.BytesIO(f.read())
+        elif isinstance(stream, bytes):
+            # Convert bytes to BytesIO stream
+            self._stream = io.BytesIO(stream)
+        else:
+            # Assume it's already a stream-like object
+            self._stream = stream
+        
         self._parquet_file = None
         self._metadata = None
         self._file_loaded = False
@@ -47,24 +59,23 @@ cdef class ParquetDecoder:
     
     cpdef void load_file(self):
         """
-        Load the parquet file and cache metadata.
+        Load the parquet data from stream and cache metadata.
         
         Raises
         ------
-        FileNotFoundError
-            If the specified file does not exist
         ValueError
-            If the file is not a valid parquet file
+            If the stream does not contain valid parquet data
         """
-        if not self._file_path.exists():
-            raise FileNotFoundError(f"Parquet file not found: {self._file_path}")
-        
         try:
-            self._parquet_file = pq.ParquetFile(str(self._file_path))
+            # Reset stream position to beginning
+            if hasattr(self._stream, 'seek'):
+                self._stream.seek(0)
+            
+            self._parquet_file = pq.ParquetFile(self._stream)
             self._metadata = self._parquet_file.metadata
             self._file_loaded = True
         except Exception as e:
-            raise ValueError(f"Invalid parquet file: {e}")
+            raise ValueError(f"Invalid parquet data: {e}")
     
     cpdef void close(self):
         """Close the parquet file and free resources."""
@@ -308,6 +319,123 @@ cdef class ParquetDecoder:
         
         return bloom_filters
 
+    def get_all_statistics(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Get statistics for all columns across all row groups.
+        
+        Returns
+        -------
+        dict
+            Dictionary mapping column names to their aggregated statistics
+        """
+        if not self._file_loaded:
+            self.load_file()
+        
+        cdef dict all_stats = {}
+        cdef list column_names = self.get_column_names()
+        
+        for column_name in column_names:
+            all_stats[column_name] = self.get_statistics(column_name)
+        
+        return all_stats
+
+    def get_all_bloom_filters(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Get bloom filters for all columns across all row groups.
+        
+        Returns
+        -------
+        dict
+            Dictionary mapping column names to their bloom filter information
+        """
+        if not self._file_loaded:
+            self.load_file()
+        
+        cdef dict all_bloom_filters = {}
+        cdef list column_names = self.get_column_names()
+        
+        for column_name in column_names:
+            all_bloom_filters[column_name] = self.get_bloom_filters(column_name)
+        
+        return all_bloom_filters
+
+    def check_bloom_filter_all_row_groups(self, str column_name, object value) -> List[bool]:
+        """
+        Check if a value might exist in a column across all row groups using bloom filters.
+        
+        Parameters
+        ----------
+        column_name : str
+            Name of the column to check
+        value : object
+            Value to check for existence
+            
+        Returns
+        -------
+        list[bool]
+            List of boolean values indicating if the value might exist in each row group
+        """
+        if not self._file_loaded:
+            self.load_file()
+        
+        cdef list results = []
+        cdef int row_group_idx
+        
+        for row_group_idx in range(self._metadata.num_row_groups):
+            result = self.check_bloom_filter(column_name, value, row_group_idx)
+            results.append(result)
+        
+        return results
+
+    def get_row_group_statistics(self) -> List[Dict[str, Any]]:
+        """
+        Get statistics for each row group separately.
+        
+        Returns
+        -------
+        list[dict]
+            List of dictionaries, one per row group, containing row group metadata
+        """
+        if not self._file_loaded:
+            self.load_file()
+        
+        cdef list row_group_stats = []
+        cdef int row_group_idx
+        
+        for row_group_idx in range(self._metadata.num_row_groups):
+            rg_metadata = self._metadata.row_group(row_group_idx)
+            stats = {
+                'row_group_idx': row_group_idx,
+                'num_rows': rg_metadata.num_rows,
+                'num_columns': rg_metadata.num_columns,
+                'total_byte_size': rg_metadata.total_byte_size,
+                'columns': {}
+            }
+            
+            for col_idx in range(rg_metadata.num_columns):
+                col_metadata = rg_metadata.column(col_idx)
+                col_stats = {
+                    'path_in_schema': col_metadata.path_in_schema,
+                    'file_offset': col_metadata.file_offset,
+                    'file_path': col_metadata.file_path,
+                    'total_compressed_size': col_metadata.total_compressed_size,
+                    'total_uncompressed_size': col_metadata.total_uncompressed_size,
+                }
+                
+                if col_metadata.statistics:
+                    col_stats.update({
+                        'min': col_metadata.statistics.min,
+                        'max': col_metadata.statistics.max,
+                        'null_count': col_metadata.statistics.null_count,
+                        'distinct_count': col_metadata.statistics.distinct_count,
+                    })
+                
+                stats['columns'][col_metadata.path_in_schema] = col_stats
+            
+            row_group_stats.append(stats)
+        
+        return row_group_stats
+
     def check_bloom_filter(self, str column_name, object value, int row_group_idx=0):
         """
         Check if a value might exist in a column using bloom filter.
@@ -351,14 +479,14 @@ cdef class ParquetDecoder:
 
 
 # Module-level convenience functions
-def read_parquet(file_path: Union[str, Path], columns=None) -> pa.Table:
+def read_parquet(source: Union[BinaryIO, bytes, str, Path], columns=None) -> pa.Table:
     """
-    Convenience function to read a parquet file.
+    Convenience function to read parquet data from a stream or file.
     
     Parameters
     ----------
-    file_path : str or Path
-        Path to the parquet file
+    source : BinaryIO, bytes, str, or Path
+        Stream, bytes data, or path to the parquet data
     columns : list, optional
         List of columns to read
         
@@ -367,23 +495,23 @@ def read_parquet(file_path: Union[str, Path], columns=None) -> pa.Table:
     pyarrow.Table
         Arrow table containing the data
     """
-    cdef ParquetDecoder decoder = ParquetDecoder(file_path)
+    cdef ParquetDecoder decoder = ParquetDecoder(source)
     return decoder.read_columns(columns=columns)
 
 
-def get_parquet_info(file_path: Union[str, Path]) -> Dict[str, Any]:
+def get_parquet_info(source: Union[BinaryIO, bytes, str, Path]) -> Dict[str, Any]:
     """
-    Get information about a parquet file.
+    Get information about parquet data from a stream or file.
     
     Parameters
     ----------
-    file_path : str or Path
-        Path to the parquet file
+    source : BinaryIO, bytes, str, or Path
+        Stream, bytes data, or path to the parquet data
         
     Returns
     -------
     dict
         Dictionary containing file information
     """
-    cdef ParquetDecoder decoder = ParquetDecoder(file_path)
+    cdef ParquetDecoder decoder = ParquetDecoder(source)
     return decoder.get_metadata()

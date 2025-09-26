@@ -2,18 +2,19 @@
 """
 Example usage of the rugo parquet decoder.
 
-This script demonstrates how to use the rugo library to decode parquet files
-efficiently using the Cython-based implementation.
+This script demonstrates how to use the rugo library to decode parquet data
+efficiently using the Cython-based implementation with stream-based input.
 """
 
 import tempfile
 import random
 import pyarrow as pa
 import pyarrow.parquet as pq
+import io
 from pathlib import Path
 
 def create_sample_data():
-    """Create sample parquet file for demonstration without pandas/numpy."""
+    """Create sample parquet data for demonstration without pandas/numpy."""
     # Generate sample data using Python's random module
     random.seed(42)
     
@@ -32,51 +33,61 @@ def create_sample_data():
     # Create PyArrow table
     table = pa.table(data)
     
-    # Create temporary parquet file
-    temp_file = Path(tempfile.gettempdir()) / 'sample_products.parquet'
-    pq.write_table(table, temp_file)
+    # Create in-memory parquet stream
+    stream = io.BytesIO()
+    pq.write_table(table, stream)
+    stream.seek(0)
     
-    return temp_file, table
+    return stream, table
 
 def demonstrate_basic_usage():
-    """Demonstrate basic parquet reading functionality."""
+    """Demonstrate basic parquet reading functionality with streams."""
     from rugo.decoders.parquet_decoder import read_parquet, get_parquet_info
     
-    print("=== Basic Usage Example ===")
+    print("=== Basic Usage Example (Stream-based) ===")
     
-    # Create sample data
-    parquet_file, original_table = create_sample_data()
-    print(f"Created sample file: {parquet_file}")
-    print(f"Original data: {original_table.num_rows} rows, {original_table.num_columns} columns")
+    # Create sample data as stream
+    parquet_stream, original_table = create_sample_data()
+    print(f"Created parquet stream with {original_table.num_rows} rows, {original_table.num_columns} columns")
     
-    # Get file information
-    info = get_parquet_info(parquet_file)
-    print(f"File info - Rows: {info['num_rows']}, Columns: {info['num_columns']}")
+    # Get file information from stream
+    info = get_parquet_info(parquet_stream)
+    print(f"Stream info - Rows: {info['num_rows']}, Columns: {info['num_columns']}")
     
-    # Read entire file
-    table = read_parquet(parquet_file)
+    # Reset stream position for next read
+    parquet_stream.seek(0)
+    
+    # Read entire data from stream
+    table = read_parquet(parquet_stream)
     print(f"Read complete table: {table.shape}")
     print(f"Column names: {table.column_names}")
     
-    # Read specific columns
-    price_data = read_parquet(parquet_file, columns=['name', 'price', 'category'])
+    # Reset stream position for selective read
+    parquet_stream.seek(0)
+    
+    # Read specific columns from stream
+    price_data = read_parquet(parquet_stream, columns=['name', 'price', 'category'])
     print(f"Price data shape: {price_data.shape}")
     
-    # Cleanup
-    parquet_file.unlink()
+    # Also demonstrate bytes input
+    parquet_bytes = parquet_stream.getvalue()
+    table_from_bytes = read_parquet(parquet_bytes)
+    print(f"Read from bytes: {table_from_bytes.shape}")
+    
+    print("Stream-based reading completed successfully!")
 
 def demonstrate_advanced_usage():
-    """Demonstrate advanced ParquetDecoder functionality."""
+    """Demonstrate advanced ParquetDecoder functionality with wrapped row group calls."""
     from rugo.decoders.parquet_decoder import ParquetDecoder
     
-    print("\n=== Advanced Usage Example ===")
+    print("\n=== Advanced Usage Example (Stream + Row Group Wrappers) ===")
     
-    # Create sample data
-    parquet_file, original_table = create_sample_data()
-    print(f"Using sample file: {parquet_file}")
+    # Create sample data as stream
+    parquet_stream, original_table = create_sample_data()
+    print(f"Using parquet stream with {original_table.num_rows} rows")
     
-    # Create decoder instance
-    decoder = ParquetDecoder(parquet_file)
+    # Create decoder instance with stream
+    decoder = ParquetDecoder(parquet_stream)
     
     try:
         # Get detailed metadata
@@ -97,33 +108,35 @@ def demonstrate_advanced_usage():
         if len(prices) > 0:
             print(f"Price statistics: min={min(prices):.2f}, max={max(prices):.2f}, mean={sum(prices)/len(prices):.2f}")
         
-        # Get column statistics from metadata
-        try:
-            price_stats = decoder.get_statistics('price')
-            print(f"Metadata statistics: {price_stats}")
-        except:
-            print("Column statistics not available in metadata")
+        # WRAPPED ROW GROUP CALLS - no manual iteration needed!
+        print("\n=== Wrapped Row Group Statistics (No Manual Iteration!) ===")
         
-        # Test bloom filter functionality
-        print("\n=== Bloom Filter Demo ===")
-        bloom_filters = decoder.get_bloom_filters('category')
-        print(f"Bloom filters for 'category': {list(bloom_filters.keys())}")
-        for rg_key, bloom_info in bloom_filters.items():
-            print(f"  {rg_key}: available={bloom_info['available']}")
+        # Get all statistics in one call
+        all_stats = decoder.get_all_statistics()
+        print(f"All column statistics: {list(all_stats.keys())}")
+        for col, stats in all_stats.items():
+            if 'min' in stats and stats['min'] is not None:
+                print(f"  {col}: min={stats['min']}, max={stats['max']}, nulls={stats['null_count']}")
         
-        # Test bloom filter check
-        test_value = 'Electronics'
-        might_exist = decoder.check_bloom_filter('category', test_value)
-        print(f"Value '{test_value}' might exist in category column: {might_exist}")
+        # Get all bloom filters in one call
+        all_bloom_filters = decoder.get_all_bloom_filters()
+        print(f"\nAll bloom filters: {list(all_bloom_filters.keys())}")
+        for col, bloom_info in all_bloom_filters.items():
+            available_count = sum(1 for rg_info in bloom_info.values() if rg_info.get('available', False))
+            print(f"  {col}: {available_count}/{len(bloom_info)} row groups have bloom filters")
         
-        # Read specific row groups (if multiple exist)
-        if metadata['num_row_groups'] > 1:
-            subset = decoder.read_row_groups([0], columns=['id', 'name', 'price'])
-            print(f"Row group 0 data: {subset.shape}")
-        else:
-            print("Only one row group available")
+        # Check value across all row groups in one call
+        category_results = decoder.check_bloom_filter_all_row_groups('category', 'Electronics')
+        print(f"\nBloom filter check for 'Electronics' across all row groups: {category_results}")
+        
+        # Get row group statistics wrapped in one call
+        row_group_stats = decoder.get_row_group_statistics()
+        print(f"\nRow group statistics:")
+        for i, stats in enumerate(row_group_stats):
+            print(f"  Row group {i}: {stats['num_rows']} rows, {stats['num_columns']} cols, {stats['total_byte_size']} bytes")
         
         # Read high-value products
+        parquet_stream.seek(0)  # Reset stream for new read
         high_value_data = decoder.read_columns(['name', 'price', 'category'])
         # Convert to python lists for filtering demonstration
         names = high_value_data.column('name').to_pylist()
@@ -131,7 +144,7 @@ def demonstrate_advanced_usage():
         categories = high_value_data.column('category').to_pylist()
         
         expensive_items = [(name, price, cat) for name, price, cat in zip(names, prices_list, categories) if price > 800]
-        print(f"High-value items (>$800): {len(expensive_items)} items")
+        print(f"\nHigh-value items (>$800): {len(expensive_items)} items")
         if expensive_items:
             most_expensive = max(expensive_items, key=lambda x: x[1])
             print(f"Most expensive: {most_expensive[0]} - ${most_expensive[1]:.2f}")
@@ -139,7 +152,7 @@ def demonstrate_advanced_usage():
     finally:
         # Always close the decoder
         decoder.close()
-        parquet_file.unlink()
+        print("Decoder closed successfully!")
 
 def main():
     """Run all examples."""
