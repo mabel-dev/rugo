@@ -47,3 +47,6 @@ def main():
         ext_modules=ext_modules,
         zip_safe=False,
     )
+
+if __name__ == "__main__":
+    main()
