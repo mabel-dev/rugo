@@ -9,6 +9,8 @@ A high-performance Cython-based library for decoding various file formats, start
 - **Memory Efficient**: Optimized for minimal memory overhead
 - **Simple API**: Easy-to-use interface for file operations
 - **Extensible**: Designed to support additional file formats
+- **Bloom Filter Support**: Extract and query bloom filters from parquet columns
+- **Array-based Results**: Returns standard Python array.array objects (no numpy dependency)
 
 ## Installation
 
@@ -24,7 +26,7 @@ pip install -e .
 
 ```bash
 # Install dependencies
-pip install Cython numpy pyarrow setuptools wheel
+pip install Cython pyarrow setuptools wheel
 
 # Build the Cython extensions
 python setup.py build_ext --inplace
@@ -68,13 +70,22 @@ print(f"Available columns: {columns}")
 # Read specific columns
 table = decoder.read_columns(['numeric_column'])
 
-# Fast numeric column reading (returns numpy array)
+# Fast numeric column reading (returns array.array)
 values = decoder.read_numeric_column_fast('numeric_column')
-print(f"Values shape: {values.shape}, dtype: {values.dtype}")
+print(f"Values length: {len(values)}, type: {type(values)}")
 
 # Get column statistics
 stats = decoder.get_statistics('numeric_column')
 print(f"Min: {stats.get('min')}, Max: {stats.get('max')}")
+
+# Get bloom filters
+bloom_filters = decoder.get_bloom_filters('category_column')
+for rg, info in bloom_filters.items():
+    print(f"{rg}: available={info['available']}")
+
+# Check if value might exist using bloom filter
+might_exist = decoder.check_bloom_filter('category_column', 'some_value')
+print(f"Value might exist: {might_exist}")
 
 # Read specific row groups
 table = decoder.read_row_groups([0, 1], columns=['col1', 'col2'])
@@ -100,21 +111,23 @@ decoder.close()
 - `get_column_names()` - Get list of column names
 - `read_columns(columns=None, use_threads=True)` - Read specific columns
 - `read_row_groups(row_groups, columns=None, use_threads=True)` - Read specific row groups
-- `read_numeric_column_fast(column_name)` - Fast read of numeric column into numpy array
+- `read_numeric_column_fast(column_name)` - Fast read of numeric column into array.array
 - `get_statistics(column_name)` - Get column statistics if available
+- `get_bloom_filters(column_name)` - Get bloom filter information for a column
+- `check_bloom_filter(column_name, value, row_group_idx=0)` - Check if value might exist using bloom filter
 
 ## Performance
 
 The Cython implementation provides significant performance improvements over pure Python:
 
 - **Fast I/O**: Leverages PyArrow's optimized reading
-- **Memory Efficiency**: Direct numpy array access for numeric data
+- **Memory Efficiency**: Direct array.array access for numeric data
 - **Zero-copy Operations**: Where possible, avoids data copying
+- **Bloom Filter Querying**: Fast membership testing using parquet bloom filters
 
 ## Requirements
 
 - Python 3.8+
-- NumPy
 - PyArrow 10.0+
 - Cython (for building from source)
 

@@ -7,30 +7,36 @@ efficiently using the Cython-based implementation.
 """
 
 import tempfile
-import pandas as pd
-import numpy as np
+import random
+import pyarrow as pa
+import pyarrow.parquet as pq
 from pathlib import Path
 
 def create_sample_data():
-    """Create sample parquet file for demonstration."""
-    # Generate sample data
-    np.random.seed(42)
+    """Create sample parquet file for demonstration without pandas/numpy."""
+    # Generate sample data using Python's random module
+    random.seed(42)
+    
+    # Create data directly as PyArrow arrays
+    num_rows = 1000
+    
     data = {
-        'id': range(1000),
-        'name': [f'product_{i}' for i in range(1000)],
-        'price': np.random.uniform(10, 1000, 1000),
-        'category': np.random.choice(['Electronics', 'Clothing', 'Books'], 1000),
-        'rating': np.random.uniform(1, 5, 1000),
-        'sales': np.random.randint(0, 500, 1000)
+        'id': pa.array(list(range(num_rows))),
+        'name': pa.array([f'product_{i}' for i in range(num_rows)]),
+        'price': pa.array([random.uniform(10, 1000) for _ in range(num_rows)]),
+        'category': pa.array([random.choice(['Electronics', 'Clothing', 'Books']) for _ in range(num_rows)]),
+        'rating': pa.array([random.uniform(1, 5) for _ in range(num_rows)]),
+        'sales': pa.array([random.randint(0, 500) for _ in range(num_rows)])
     }
     
-    df = pd.DataFrame(data)
+    # Create PyArrow table
+    table = pa.table(data)
     
     # Create temporary parquet file
     temp_file = Path(tempfile.gettempdir()) / 'sample_products.parquet'
-    df.to_parquet(temp_file, index=False)
+    pq.write_table(table, temp_file)
     
-    return temp_file, df
+    return temp_file, table
 
 def demonstrate_basic_usage():
     """Demonstrate basic parquet reading functionality."""
@@ -39,9 +45,9 @@ def demonstrate_basic_usage():
     print("=== Basic Usage Example ===")
     
     # Create sample data
-    parquet_file, original_df = create_sample_data()
+    parquet_file, original_table = create_sample_data()
     print(f"Created sample file: {parquet_file}")
-    print(f"Original data: {original_df.shape[0]} rows, {original_df.shape[1]} columns")
+    print(f"Original data: {original_table.num_rows} rows, {original_table.num_columns} columns")
     
     # Get file information
     info = get_parquet_info(parquet_file)
@@ -66,7 +72,7 @@ def demonstrate_advanced_usage():
     print("\n=== Advanced Usage Example ===")
     
     # Create sample data
-    parquet_file, original_df = create_sample_data()
+    parquet_file, original_table = create_sample_data()
     print(f"Using sample file: {parquet_file}")
     
     # Create decoder instance
@@ -85,10 +91,11 @@ def demonstrate_advanced_usage():
         columns = decoder.get_column_names()
         print(f"Available columns: {columns}")
         
-        # Fast numeric column reading
+        # Fast numeric column reading (now returns array.array)
         prices = decoder.read_numeric_column_fast('price')
-        print(f"Fast price read: shape={prices.shape}, dtype={prices.dtype}")
-        print(f"Price statistics: min={prices.min():.2f}, max={prices.max():.2f}, mean={prices.mean():.2f}")
+        print(f"Fast price read: length={len(prices)}, type={type(prices)}")
+        if len(prices) > 0:
+            print(f"Price statistics: min={min(prices):.2f}, max={max(prices):.2f}, mean={sum(prices)/len(prices):.2f}")
         
         # Get column statistics from metadata
         try:
@@ -96,6 +103,18 @@ def demonstrate_advanced_usage():
             print(f"Metadata statistics: {price_stats}")
         except:
             print("Column statistics not available in metadata")
+        
+        # Test bloom filter functionality
+        print("\n=== Bloom Filter Demo ===")
+        bloom_filters = decoder.get_bloom_filters('category')
+        print(f"Bloom filters for 'category': {list(bloom_filters.keys())}")
+        for rg_key, bloom_info in bloom_filters.items():
+            print(f"  {rg_key}: available={bloom_info['available']}")
+        
+        # Test bloom filter check
+        test_value = 'Electronics'
+        might_exist = decoder.check_bloom_filter('category', test_value)
+        print(f"Value '{test_value}' might exist in category column: {might_exist}")
         
         # Read specific row groups (if multiple exist)
         if metadata['num_row_groups'] > 1:
@@ -106,12 +125,16 @@ def demonstrate_advanced_usage():
         
         # Read high-value products
         high_value_data = decoder.read_columns(['name', 'price', 'category'])
-        # Convert to pandas for filtering demonstration
-        high_value_df = high_value_data.to_pandas()
-        expensive_items = high_value_df[high_value_df['price'] > 800]
+        # Convert to python lists for filtering demonstration
+        names = high_value_data.column('name').to_pylist()
+        prices_list = high_value_data.column('price').to_pylist()
+        categories = high_value_data.column('category').to_pylist()
+        
+        expensive_items = [(name, price, cat) for name, price, cat in zip(names, prices_list, categories) if price > 800]
         print(f"High-value items (>$800): {len(expensive_items)} items")
-        if len(expensive_items) > 0:
-            print(f"Most expensive: {expensive_items.loc[expensive_items['price'].idxmax(), 'name']} - ${expensive_items['price'].max():.2f}")
+        if expensive_items:
+            most_expensive = max(expensive_items, key=lambda x: x[1])
+            print(f"Most expensive: {most_expensive[0]} - ${most_expensive[1]:.2f}")
     
     finally:
         # Always close the decoder

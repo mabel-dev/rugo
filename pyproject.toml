@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "Cython>=0.29.0", "numpy"]
+requires = ["setuptools>=45", "wheel", "Cython>=0.29.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -28,7 +28,6 @@ classifiers = [
 keywords = ["file", "decoder", "parquet", "cython"]
 requires-python = ">=3.8"
 dependencies = [
-    "numpy",
     "pyarrow>=10.0.0",
 ]
 
