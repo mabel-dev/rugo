@@ -7,6 +7,7 @@ Example demonstrating the new rugo parquet features:
 
 import rugo.parquet as parquet_meta
 
+
 def example_logical_types():
     """Demonstrate logical type extraction"""
     print("🔍 Logical Type Extraction Example")

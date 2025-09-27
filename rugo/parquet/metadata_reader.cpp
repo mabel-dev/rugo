@@ -2542,7 +2542,7 @@ static const char __pyx_k_unpack[] = "unpack";
 static const char __pyx_k_6_Q_s_Q[] = "\200\001\360\022\000\005\014\2106\220\024\220Q\320\026'\240s\250#\250Q";
 static const char __pyx_k_columns[] = "columns";
 static const char __pyx_k_rg_dict[] = "rg_dict";
-static const char __pyx_k_Ba_q_WAQ[] = "\200\001\360\"\000\005\010\200}\220B\220a\330\010\017\210q\330\004\032\320\032*\250!\330\010\021\220\027\230\001\230\021\330\010\t\330\010\t\330\010\r\210W\220A\220Q";
+static const char __pyx_k_Ba_q_WAQ[] = "\200\001\360,\000\005\010\200}\220B\220a\330\010\017\210q\330\004\032\320\032*\250!\330\010\021\220\027\230\001\230\021\330\010\t\330\010\t\330\010\r\210W\220A\220Q";
 static const char __pyx_k_add_note[] = "add_note";
 static const char __pyx_k_datetime[] = "datetime";
 static const char __pyx_k_num_rows[] = "num_rows";
@@ -2566,7 +2566,7 @@ static const char __pyx_k_logical_type_str[] = "logical_type_str";
 static const char __pyx_k_test_bloom_filter[] = "test_bloom_filter";
 static const char __pyx_k_asyncio_coroutines[] = "asyncio.coroutines";
 static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";
-static const char __pyx_k_AT_Ba_a_b_r_q_G2Q_s_wa_3mSXX_dd[] = "\200\001\340\004\030\320\030,\250A\250T\260\027\270\001\270\021\330\004\005\330\010\024\220B\220a\330\010\026\220a\340\004\010\210\006\210b\220\001\330\010\t\330\014\030\230\002\230!\330\014\037\230r\240\021\330\014\027\220q\340\010\014\210G\2202\220Q\330\014\037\230s\240-\250w\260a\260|\3003\300m\320SX\320X[\320[]\320]d\320de\330\014\023\2201\220J\230g\240Q\330\020\030\230\003\2305\240\007\240q\250\001\330\020\030\230\003\230>\250\027\260\001\260\021\330\020 \240\001\330\020\027\220|\2401\240C\320'7\260s\270!\330\020\027\220|\2401\240C\320'7\260s\270!\330\020\036\230c\240\021\330\020 \240\003\2401\330\020 \240\003\2401\340\010\016\210a\210}\230G\2401\240A\330\004\013\2101";
+static const char __pyx_k_AT_Ba_a_b_r_q_G2Q_s_uCr_3m7_1_1[] = "\200\001\340\004\030\320\030,\250A\250T\260\027\270\001\270\021\330\004\005\330\010\024\220B\220a\330\010\026\220a\340\004\010\210\006\210b\220\001\330\010\t\330\014\030\230\002\230!\330\014\037\230r\240\021\330\014\027\220q\340\010\014\210G\2202\220Q\330\014\017\210s\220-\230u\240C\240r\250\021\330\020#\2403\240m\2607\270!\2701\340\020#\2401\330\014\023\2201\220J\230g\240Q\330\020\030\230\003\2305\240\007\240q\250\001\330\020\030\230\003\230>\250\027\260\001\260\021\330\020 \240\001\330\020\027\220|\2401\240C\320'7\260s\270!\330\020\027\220|\2401\240C\320'7\260s\270!\330\020\036\230c\240\021\330\020 \240\003\2401\330\020 \240\003\2401\340\010\016\210a\210}\230G\2401\240A\330\004\013\2101";
 static const char __pyx_k_Note_that_Cython_is_deliberately[] = "Note that Cython is deliberately stricter than PEP-484 and rejects subclasses of builtin types. If you need to pass subclasses then set the 'annotation_typing' directive to False.";
 static const char __pyx_k_rugo_parquet_metadata_reader_pyx[] = "rugo/parquet/metadata_reader.pyx";
 /* #### Code section: decls ### */
@@ -4115,8 +4115,8 @@ static PyObject *__pyx_pf_4rugo_7parquet_read_metadata(CYTHON_UNUSED PyObject *_
  *             "columns": []
  *         }
  *         for col in rg.columns:             # <<<<<<<<<<<<<<
- *             logical_type_str = col.logical_type.decode("utf-8") if col.logical_type.size() > 0 else ""
- *             rg_dict["columns"].append({
+ *             if col.logical_type.size() > 0:
+ *                 logical_type_str = col.logical_type.decode("utf-8")
 */
     __pyx_t_6 = __pyx_v_rg.columns.begin();
     for (; __pyx_t_6 != __pyx_v_rg.columns.end(); ++__pyx_t_6) {
@@ -4126,136 +4126,161 @@ static PyObject *__pyx_pf_4rugo_7parquet_read_metadata(CYTHON_UNUSED PyObject *_
       /* "rugo/parquet/metadata_reader.pyx":62
  *         }
  *         for col in rg.columns:
- *             logical_type_str = col.logical_type.decode("utf-8") if col.logical_type.size() > 0 else ""             # <<<<<<<<<<<<<<
- *             rg_dict["columns"].append({
- *                 "name": col.name.decode("utf-8"),
+ *             if col.logical_type.size() > 0:             # <<<<<<<<<<<<<<
+ *                 logical_type_str = col.logical_type.decode("utf-8")
+ *             else:
 */
       __pyx_t_8 = (__pyx_v_col.logical_type.size() > 0);
       if (__pyx_t_8) {
-        __pyx_t_3 = __Pyx_decode_cpp_string(__pyx_v_col.logical_type, 0, PY_SSIZE_T_MAX, NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 62, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
-        __pyx_t_1 = __pyx_t_3;
-        __pyx_t_3 = 0;
-      } else {
-        __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u_);
-        __pyx_t_1 = __pyx_mstate_global->__pyx_kp_u_;
-      }
-      __Pyx_XDECREF_SET(__pyx_v_logical_type_str, __pyx_t_1);
-      __pyx_t_1 = 0;
 
-      /* "rugo/parquet/metadata_reader.pyx":63
+        /* "rugo/parquet/metadata_reader.pyx":63
  *         for col in rg.columns:
- *             logical_type_str = col.logical_type.decode("utf-8") if col.logical_type.size() > 0 else ""
+ *             if col.logical_type.size() > 0:
+ *                 logical_type_str = col.logical_type.decode("utf-8")             # <<<<<<<<<<<<<<
+ *             else:
+ *                 logical_type_str = ""
+*/
+        __pyx_t_1 = __Pyx_decode_cpp_string(__pyx_v_col.logical_type, 0, PY_SSIZE_T_MAX, NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 63, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_1);
+        __Pyx_XDECREF_SET(__pyx_v_logical_type_str, __pyx_t_1);
+        __pyx_t_1 = 0;
+
+        /* "rugo/parquet/metadata_reader.pyx":62
+ *         }
+ *         for col in rg.columns:
+ *             if col.logical_type.size() > 0:             # <<<<<<<<<<<<<<
+ *                 logical_type_str = col.logical_type.decode("utf-8")
+ *             else:
+*/
+        goto __pyx_L7;
+      }
+
+      /* "rugo/parquet/metadata_reader.pyx":65
+ *                 logical_type_str = col.logical_type.decode("utf-8")
+ *             else:
+ *                 logical_type_str = ""             # <<<<<<<<<<<<<<
+ *             rg_dict["columns"].append({
+ *                 "name": col.name.decode("utf-8"),
+*/
+      /*else*/ {
+        __Pyx_INCREF(__pyx_mstate_global->__pyx_kp_u_);
+        __Pyx_XDECREF_SET(__pyx_v_logical_type_str, __pyx_mstate_global->__pyx_kp_u_);
+      }
+      __pyx_L7:;
+
+      /* "rugo/parquet/metadata_reader.pyx":66
+ *             else:
+ *                 logical_type_str = ""
  *             rg_dict["columns"].append({             # <<<<<<<<<<<<<<
  *                 "name": col.name.decode("utf-8"),
  *                 "type": col.physical_type.decode("utf-8"),
 */
-      __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_rg_dict, __pyx_mstate_global->__pyx_n_u_columns); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 63, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_rg_dict, __pyx_mstate_global->__pyx_n_u_columns); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 66, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
 
-      /* "rugo/parquet/metadata_reader.pyx":64
- *             logical_type_str = col.logical_type.decode("utf-8") if col.logical_type.size() > 0 else ""
+      /* "rugo/parquet/metadata_reader.pyx":67
+ *                 logical_type_str = ""
  *             rg_dict["columns"].append({
  *                 "name": col.name.decode("utf-8"),             # <<<<<<<<<<<<<<
  *                 "type": col.physical_type.decode("utf-8"),
  *                 "logical_type": logical_type_str,
 */
-      __pyx_t_3 = __Pyx_PyDict_NewPresized(8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 64, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyDict_NewPresized(8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 67, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_9 = __Pyx_decode_cpp_string(__pyx_v_col.name, 0, PY_SSIZE_T_MAX, NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 64, __pyx_L1_error)
+      __pyx_t_9 = __Pyx_decode_cpp_string(__pyx_v_col.name, 0, PY_SSIZE_T_MAX, NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 67, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
-      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_name, __pyx_t_9) < 0) __PYX_ERR(0, 64, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_name, __pyx_t_9) < 0) __PYX_ERR(0, 67, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-      /* "rugo/parquet/metadata_reader.pyx":65
+      /* "rugo/parquet/metadata_reader.pyx":68
  *             rg_dict["columns"].append({
  *                 "name": col.name.decode("utf-8"),
  *                 "type": col.physical_type.decode("utf-8"),             # <<<<<<<<<<<<<<
  *                 "logical_type": logical_type_str,
  *                 "min": decode_value(col.physical_type, col.min),
 */
-      __pyx_t_9 = __Pyx_decode_cpp_string(__pyx_v_col.physical_type, 0, PY_SSIZE_T_MAX, NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 65, __pyx_L1_error)
+      __pyx_t_9 = __Pyx_decode_cpp_string(__pyx_v_col.physical_type, 0, PY_SSIZE_T_MAX, NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 68, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
-      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_type, __pyx_t_9) < 0) __PYX_ERR(0, 64, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_type, __pyx_t_9) < 0) __PYX_ERR(0, 67, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-      /* "rugo/parquet/metadata_reader.pyx":66
+      /* "rugo/parquet/metadata_reader.pyx":69
  *                 "name": col.name.decode("utf-8"),
  *                 "type": col.physical_type.decode("utf-8"),
  *                 "logical_type": logical_type_str,             # <<<<<<<<<<<<<<
  *                 "min": decode_value(col.physical_type, col.min),
  *                 "max": decode_value(col.physical_type, col.max),
 */
-      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_logical_type, __pyx_v_logical_type_str) < 0) __PYX_ERR(0, 64, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_logical_type, __pyx_v_logical_type_str) < 0) __PYX_ERR(0, 67, __pyx_L1_error)
 
-      /* "rugo/parquet/metadata_reader.pyx":67
+      /* "rugo/parquet/metadata_reader.pyx":70
  *                 "type": col.physical_type.decode("utf-8"),
  *                 "logical_type": logical_type_str,
  *                 "min": decode_value(col.physical_type, col.min),             # <<<<<<<<<<<<<<
  *                 "max": decode_value(col.physical_type, col.max),
  *                 "null_count": col.null_count,
 */
-      __pyx_t_9 = __pyx_f_4rugo_7parquet_decode_value(__pyx_v_col.physical_type, __pyx_v_col.min); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 67, __pyx_L1_error)
+      __pyx_t_9 = __pyx_f_4rugo_7parquet_decode_value(__pyx_v_col.physical_type, __pyx_v_col.min); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 70, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
-      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_min, __pyx_t_9) < 0) __PYX_ERR(0, 64, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_min, __pyx_t_9) < 0) __PYX_ERR(0, 67, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-      /* "rugo/parquet/metadata_reader.pyx":68
+      /* "rugo/parquet/metadata_reader.pyx":71
  *                 "logical_type": logical_type_str,
  *                 "min": decode_value(col.physical_type, col.min),
  *                 "max": decode_value(col.physical_type, col.max),             # <<<<<<<<<<<<<<
  *                 "null_count": col.null_count,
  *                 "bloom_offset": col.bloom_offset,
 */
-      __pyx_t_9 = __pyx_f_4rugo_7parquet_decode_value(__pyx_v_col.physical_type, __pyx_v_col.max); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 68, __pyx_L1_error)
+      __pyx_t_9 = __pyx_f_4rugo_7parquet_decode_value(__pyx_v_col.physical_type, __pyx_v_col.max); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 71, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
-      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_max, __pyx_t_9) < 0) __PYX_ERR(0, 64, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_max, __pyx_t_9) < 0) __PYX_ERR(0, 67, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-      /* "rugo/parquet/metadata_reader.pyx":69
+      /* "rugo/parquet/metadata_reader.pyx":72
  *                 "min": decode_value(col.physical_type, col.min),
  *                 "max": decode_value(col.physical_type, col.max),
  *                 "null_count": col.null_count,             # <<<<<<<<<<<<<<
  *                 "bloom_offset": col.bloom_offset,
  *                 "bloom_length": col.bloom_length,
 */
-      __pyx_t_9 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_col.null_count); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 69, __pyx_L1_error)
+      __pyx_t_9 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_col.null_count); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 72, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
-      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_null_count, __pyx_t_9) < 0) __PYX_ERR(0, 64, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_null_count, __pyx_t_9) < 0) __PYX_ERR(0, 67, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-      /* "rugo/parquet/metadata_reader.pyx":70
+      /* "rugo/parquet/metadata_reader.pyx":73
  *                 "max": decode_value(col.physical_type, col.max),
  *                 "null_count": col.null_count,
  *                 "bloom_offset": col.bloom_offset,             # <<<<<<<<<<<<<<
  *                 "bloom_length": col.bloom_length,
  *             })
 */
-      __pyx_t_9 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_col.bloom_offset); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 70, __pyx_L1_error)
+      __pyx_t_9 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_col.bloom_offset); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 73, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
-      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_bloom_offset, __pyx_t_9) < 0) __PYX_ERR(0, 64, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_bloom_offset, __pyx_t_9) < 0) __PYX_ERR(0, 67, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-      /* "rugo/parquet/metadata_reader.pyx":71
+      /* "rugo/parquet/metadata_reader.pyx":74
  *                 "null_count": col.null_count,
  *                 "bloom_offset": col.bloom_offset,
  *                 "bloom_length": col.bloom_length,             # <<<<<<<<<<<<<<
  *             })
  *         result["row_groups"].append(rg_dict)
 */
-      __pyx_t_9 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_col.bloom_length); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 71, __pyx_L1_error)
+      __pyx_t_9 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_col.bloom_length); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 74, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
-      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_bloom_length, __pyx_t_9) < 0) __PYX_ERR(0, 64, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_bloom_length, __pyx_t_9) < 0) __PYX_ERR(0, 67, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-      /* "rugo/parquet/metadata_reader.pyx":63
- *         for col in rg.columns:
- *             logical_type_str = col.logical_type.decode("utf-8") if col.logical_type.size() > 0 else ""
+      /* "rugo/parquet/metadata_reader.pyx":66
+ *             else:
+ *                 logical_type_str = ""
  *             rg_dict["columns"].append({             # <<<<<<<<<<<<<<
  *                 "name": col.name.decode("utf-8"),
  *                 "type": col.physical_type.decode("utf-8"),
 */
-      __pyx_t_10 = __Pyx_PyObject_Append(__pyx_t_1, __pyx_t_3); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 63, __pyx_L1_error)
+      __pyx_t_10 = __Pyx_PyObject_Append(__pyx_t_1, __pyx_t_3); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 66, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
@@ -4263,21 +4288,21 @@ static PyObject *__pyx_pf_4rugo_7parquet_read_metadata(CYTHON_UNUSED PyObject *_
  *             "columns": []
  *         }
  *         for col in rg.columns:             # <<<<<<<<<<<<<<
- *             logical_type_str = col.logical_type.decode("utf-8") if col.logical_type.size() > 0 else ""
- *             rg_dict["columns"].append({
+ *             if col.logical_type.size() > 0:
+ *                 logical_type_str = col.logical_type.decode("utf-8")
 */
     }
 
-    /* "rugo/parquet/metadata_reader.pyx":73
+    /* "rugo/parquet/metadata_reader.pyx":76
  *                 "bloom_length": col.bloom_length,
  *             })
  *         result["row_groups"].append(rg_dict)             # <<<<<<<<<<<<<<
  *     return result
  * 
 */
-    __pyx_t_3 = __Pyx_PyDict_GetItem(__pyx_v_result, __pyx_mstate_global->__pyx_n_u_row_groups); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 73, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyDict_GetItem(__pyx_v_result, __pyx_mstate_global->__pyx_n_u_row_groups); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 76, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_10 = __Pyx_PyObject_Append(__pyx_t_3, __pyx_v_rg_dict); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 73, __pyx_L1_error)
+    __pyx_t_10 = __Pyx_PyObject_Append(__pyx_t_3, __pyx_v_rg_dict); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 76, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
     /* "rugo/parquet/metadata_reader.pyx":55
@@ -4289,7 +4314,7 @@ static PyObject *__pyx_pf_4rugo_7parquet_read_metadata(CYTHON_UNUSED PyObject *_
 */
   }
 
-  /* "rugo/parquet/metadata_reader.pyx":74
+  /* "rugo/parquet/metadata_reader.pyx":77
  *             })
  *         result["row_groups"].append(rg_dict)
  *     return result             # <<<<<<<<<<<<<<
@@ -4325,12 +4350,12 @@ static PyObject *__pyx_pf_4rugo_7parquet_read_metadata(CYTHON_UNUSED PyObject *_
   return __pyx_r;
 }
 
-/* "rugo/parquet/metadata_reader.pyx":77
+/* "rugo/parquet/metadata_reader.pyx":80
  * 
  * 
- * def test_bloom_filter(str file_path, long long bloom_offset, long long bloom_length, str value):             # <<<<<<<<<<<<<<
- *     """Test if a value might be present in a bloom filter.
- * 
+ * def test_bloom_filter(             # <<<<<<<<<<<<<<
+ *         str file_path,
+ *         long long bloom_offset,
 */
 
 /* Python wrapper */
@@ -4341,7 +4366,7 @@ PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_4rugo_7parquet_2test_bloom_filter, "Test if a value might be present in a bloom filter.\n    \n    Args:\n        file_path: Path to the Parquet file\n        bloom_offset: Offset of the bloom filter in the file\n        bloom_length: Length of the bloom filter data (can be -1 if unknown)\n        value: Value to test for\n        \n    Returns:\n        True if the value might be present (no false negatives),\n        False if the value is definitely not present\n        \n    Note:\n        This is a simplified bloom filter implementation. The actual Parquet\n        bloom filter format can be complex and this may not work with all files.\n    ");
+PyDoc_STRVAR(__pyx_doc_4rugo_7parquet_2test_bloom_filter, "Test if a value might be present in a bloom filter.\n\n    Args:\n        file_path: Path to the Parquet file\n        bloom_offset: Offset of the bloom filter in the file\n        bloom_length: Length of the bloom filter data (can be -1 if unknown)\n        value: Value to test for\n\n    Returns:\n        True if the value might be present (no false negatives),\n        False if the value is definitely not present\n\n    Note:\n        This is a simplified bloom filter implementation. The actual Parquet\n        bloom filter format can be complex and this may not work with all files.\n    ");
 static PyMethodDef __pyx_mdef_4rugo_7parquet_3test_bloom_filter = {"test_bloom_filter", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_4rugo_7parquet_3test_bloom_filter, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_4rugo_7parquet_2test_bloom_filter};
 static PyObject *__pyx_pw_4rugo_7parquet_3test_bloom_filter(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
@@ -4376,53 +4401,53 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_file_path,&__pyx_mstate_global->__pyx_n_u_bloom_offset,&__pyx_mstate_global->__pyx_n_u_bloom_length,&__pyx_mstate_global->__pyx_n_u_value,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 77, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 80, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  4:
         values[3] = __Pyx_ArgRef_FASTCALL(__pyx_args, 3);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 77, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 80, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  3:
         values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 77, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 80, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  2:
         values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 77, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 80, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 77, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 80, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "test_bloom_filter", 0) < 0) __PYX_ERR(0, 77, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "test_bloom_filter", 0) < 0) __PYX_ERR(0, 80, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 4; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("test_bloom_filter", 1, 4, 4, i); __PYX_ERR(0, 77, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("test_bloom_filter", 1, 4, 4, i); __PYX_ERR(0, 80, __pyx_L3_error) }
       }
     } else if (unlikely(__pyx_nargs != 4)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 77, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 80, __pyx_L3_error)
       values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 77, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 80, __pyx_L3_error)
       values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 77, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 80, __pyx_L3_error)
       values[3] = __Pyx_ArgRef_FASTCALL(__pyx_args, 3);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 77, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[3])) __PYX_ERR(0, 80, __pyx_L3_error)
     }
     __pyx_v_file_path = ((PyObject*)values[0]);
-    __pyx_v_bloom_offset = __Pyx_PyLong_As_PY_LONG_LONG(values[1]); if (unlikely((__pyx_v_bloom_offset == (PY_LONG_LONG)-1) && PyErr_Occurred())) __PYX_ERR(0, 77, __pyx_L3_error)
-    __pyx_v_bloom_length = __Pyx_PyLong_As_PY_LONG_LONG(values[2]); if (unlikely((__pyx_v_bloom_length == (PY_LONG_LONG)-1) && PyErr_Occurred())) __PYX_ERR(0, 77, __pyx_L3_error)
+    __pyx_v_bloom_offset = __Pyx_PyLong_As_PY_LONG_LONG(values[1]); if (unlikely((__pyx_v_bloom_offset == (PY_LONG_LONG)-1) && PyErr_Occurred())) __PYX_ERR(0, 82, __pyx_L3_error)
+    __pyx_v_bloom_length = __Pyx_PyLong_As_PY_LONG_LONG(values[2]); if (unlikely((__pyx_v_bloom_length == (PY_LONG_LONG)-1) && PyErr_Occurred())) __PYX_ERR(0, 83, __pyx_L3_error)
     __pyx_v_value = ((PyObject*)values[3]);
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("test_bloom_filter", 1, 4, 4, __pyx_nargs); __PYX_ERR(0, 77, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("test_bloom_filter", 1, 4, 4, __pyx_nargs); __PYX_ERR(0, 80, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -4433,8 +4458,8 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_file_path), (&PyUnicode_Type), 1, "file_path", 1))) __PYX_ERR(0, 77, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_value), (&PyUnicode_Type), 1, "value", 1))) __PYX_ERR(0, 77, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_file_path), (&PyUnicode_Type), 1, "file_path", 1))) __PYX_ERR(0, 81, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_value), (&PyUnicode_Type), 1, "value", 1))) __PYX_ERR(0, 84, __pyx_L1_error)
   __pyx_r = __pyx_pf_4rugo_7parquet_2test_bloom_filter(__pyx_self, __pyx_v_file_path, __pyx_v_bloom_offset, __pyx_v_bloom_length, __pyx_v_value);
 
   /* function exit code */
@@ -4466,7 +4491,7 @@ static PyObject *__pyx_pf_4rugo_7parquet_2test_bloom_filter(CYTHON_UNUSED PyObje
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("test_bloom_filter", 0);
 
-  /* "rugo/parquet/metadata_reader.pyx":94
+  /* "rugo/parquet/metadata_reader.pyx":102
  *         bloom filter format can be complex and this may not work with all files.
  *     """
  *     if bloom_offset < 0:             # <<<<<<<<<<<<<<
@@ -4476,7 +4501,7 @@ static PyObject *__pyx_pf_4rugo_7parquet_2test_bloom_filter(CYTHON_UNUSED PyObje
   __pyx_t_1 = (__pyx_v_bloom_offset < 0);
   if (__pyx_t_1) {
 
-    /* "rugo/parquet/metadata_reader.pyx":95
+    /* "rugo/parquet/metadata_reader.pyx":103
  *     """
  *     if bloom_offset < 0:
  *         return False             # <<<<<<<<<<<<<<
@@ -4488,7 +4513,7 @@ static PyObject *__pyx_pf_4rugo_7parquet_2test_bloom_filter(CYTHON_UNUSED PyObje
     __pyx_r = Py_False;
     goto __pyx_L0;
 
-    /* "rugo/parquet/metadata_reader.pyx":94
+    /* "rugo/parquet/metadata_reader.pyx":102
  *         bloom filter format can be complex and this may not work with all files.
  *     """
  *     if bloom_offset < 0:             # <<<<<<<<<<<<<<
@@ -4497,7 +4522,7 @@ static PyObject *__pyx_pf_4rugo_7parquet_2test_bloom_filter(CYTHON_UNUSED PyObje
 */
   }
 
-  /* "rugo/parquet/metadata_reader.pyx":96
+  /* "rugo/parquet/metadata_reader.pyx":104
  *     if bloom_offset < 0:
  *         return False
  *     return metadata_reader.TestBloomFilter(             # <<<<<<<<<<<<<<
@@ -4506,7 +4531,7 @@ static PyObject *__pyx_pf_4rugo_7parquet_2test_bloom_filter(CYTHON_UNUSED PyObje
 */
   __Pyx_XDECREF(__pyx_r);
 
-  /* "rugo/parquet/metadata_reader.pyx":97
+  /* "rugo/parquet/metadata_reader.pyx":105
  *         return False
  *     return metadata_reader.TestBloomFilter(
  *         file_path.encode("utf-8"),             # <<<<<<<<<<<<<<
@@ -4515,14 +4540,14 @@ static PyObject *__pyx_pf_4rugo_7parquet_2test_bloom_filter(CYTHON_UNUSED PyObje
 */
   if (unlikely(__pyx_v_file_path == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "encode");
-    __PYX_ERR(0, 97, __pyx_L1_error)
+    __PYX_ERR(0, 105, __pyx_L1_error)
   }
-  __pyx_t_2 = PyUnicode_AsUTF8String(__pyx_v_file_path); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 97, __pyx_L1_error)
+  __pyx_t_2 = PyUnicode_AsUTF8String(__pyx_v_file_path); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 105, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __pyx_convert_string_from_py_6libcpp_6string_std__in_string(__pyx_t_2); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 97, __pyx_L1_error)
+  __pyx_t_3 = __pyx_convert_string_from_py_6libcpp_6string_std__in_string(__pyx_t_2); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 105, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "rugo/parquet/metadata_reader.pyx":100
+  /* "rugo/parquet/metadata_reader.pyx":108
  *         bloom_offset,
  *         bloom_length,
  *         value.encode("utf-8")             # <<<<<<<<<<<<<<
@@ -4531,32 +4556,32 @@ static PyObject *__pyx_pf_4rugo_7parquet_2test_bloom_filter(CYTHON_UNUSED PyObje
 */
   if (unlikely(__pyx_v_value == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "encode");
-    __PYX_ERR(0, 100, __pyx_L1_error)
+    __PYX_ERR(0, 108, __pyx_L1_error)
   }
-  __pyx_t_2 = PyUnicode_AsUTF8String(__pyx_v_value); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 100, __pyx_L1_error)
+  __pyx_t_2 = PyUnicode_AsUTF8String(__pyx_v_value); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 108, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = __pyx_convert_string_from_py_6libcpp_6string_std__in_string(__pyx_t_2); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 100, __pyx_L1_error)
+  __pyx_t_4 = __pyx_convert_string_from_py_6libcpp_6string_std__in_string(__pyx_t_2); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 108, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "rugo/parquet/metadata_reader.pyx":96
+  /* "rugo/parquet/metadata_reader.pyx":104
  *     if bloom_offset < 0:
  *         return False
  *     return metadata_reader.TestBloomFilter(             # <<<<<<<<<<<<<<
  *         file_path.encode("utf-8"),
  *         bloom_offset,
 */
-  __pyx_t_2 = __Pyx_PyBool_FromLong(TestBloomFilter(__pyx_t_3, __pyx_v_bloom_offset, __pyx_v_bloom_length, __pyx_t_4)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 96, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyBool_FromLong(TestBloomFilter(__pyx_t_3, __pyx_v_bloom_offset, __pyx_v_bloom_length, __pyx_t_4)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 104, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "rugo/parquet/metadata_reader.pyx":77
+  /* "rugo/parquet/metadata_reader.pyx":80
  * 
  * 
- * def test_bloom_filter(str file_path, long long bloom_offset, long long bloom_length, str value):             # <<<<<<<<<<<<<<
- *     """Test if a value might be present in a bloom filter.
- * 
+ * def test_bloom_filter(             # <<<<<<<<<<<<<<
+ *         str file_path,
+ *         long long bloom_offset,
 */
 
   /* function exit code */
@@ -4570,7 +4595,7 @@ static PyObject *__pyx_pf_4rugo_7parquet_2test_bloom_filter(CYTHON_UNUSED PyObje
   return __pyx_r;
 }
 
-/* "rugo/parquet/metadata_reader.pyx":104
+/* "rugo/parquet/metadata_reader.pyx":112
  * 
  * 
  * def has_bloom_filter(dict column):             # <<<<<<<<<<<<<<
@@ -4586,7 +4611,7 @@ PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_4rugo_7parquet_4has_bloom_filter, "Check if a column has bloom filter information.\n    \n    Args:\n        column: A column dictionary from read_metadata()\n        \n    Returns:\n        True if the column has bloom filter, False otherwise\n    ");
+PyDoc_STRVAR(__pyx_doc_4rugo_7parquet_4has_bloom_filter, "Check if a column has bloom filter information.\n\n    Args:\n        column: A column dictionary from read_metadata()\n\n    Returns:\n        True if the column has bloom filter, False otherwise\n    ");
 static PyMethodDef __pyx_mdef_4rugo_7parquet_5has_bloom_filter = {"has_bloom_filter", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_4rugo_7parquet_5has_bloom_filter, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_4rugo_7parquet_4has_bloom_filter};
 static PyObject *__pyx_pw_4rugo_7parquet_5has_bloom_filter(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
@@ -4618,32 +4643,32 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_column,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 104, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 112, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 104, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 112, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "has_bloom_filter", 0) < 0) __PYX_ERR(0, 104, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "has_bloom_filter", 0) < 0) __PYX_ERR(0, 112, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 1; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("has_bloom_filter", 1, 1, 1, i); __PYX_ERR(0, 104, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("has_bloom_filter", 1, 1, 1, i); __PYX_ERR(0, 112, __pyx_L3_error) }
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 104, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 112, __pyx_L3_error)
     }
     __pyx_v_column = ((PyObject*)values[0]);
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("has_bloom_filter", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 104, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("has_bloom_filter", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 112, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -4654,7 +4679,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_column), (&PyDict_Type), 1, "column", 1))) __PYX_ERR(0, 104, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_column), (&PyDict_Type), 1, "column", 1))) __PYX_ERR(0, 112, __pyx_L1_error)
   __pyx_r = __pyx_pf_4rugo_7parquet_4has_bloom_filter(__pyx_self, __pyx_v_column);
 
   /* function exit code */
@@ -4684,7 +4709,7 @@ static PyObject *__pyx_pf_4rugo_7parquet_4has_bloom_filter(CYTHON_UNUSED PyObjec
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("has_bloom_filter", 0);
 
-  /* "rugo/parquet/metadata_reader.pyx":113
+  /* "rugo/parquet/metadata_reader.pyx":121
  *         True if the column has bloom filter, False otherwise
  *     """
  *     return column.get('bloom_offset', -1) >= 0             # <<<<<<<<<<<<<<
@@ -4692,17 +4717,17 @@ static PyObject *__pyx_pf_4rugo_7parquet_4has_bloom_filter(CYTHON_UNUSED PyObjec
   __Pyx_XDECREF(__pyx_r);
   if (unlikely(__pyx_v_column == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "get");
-    __PYX_ERR(0, 113, __pyx_L1_error)
+    __PYX_ERR(0, 121, __pyx_L1_error)
   }
-  __pyx_t_1 = __Pyx_PyDict_GetItemDefault(__pyx_v_column, __pyx_mstate_global->__pyx_n_u_bloom_offset, __pyx_mstate_global->__pyx_int_neg_1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 113, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyDict_GetItemDefault(__pyx_v_column, __pyx_mstate_global->__pyx_n_u_bloom_offset, __pyx_mstate_global->__pyx_int_neg_1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 121, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = PyObject_RichCompare(__pyx_t_1, __pyx_mstate_global->__pyx_int_0, Py_GE); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 113, __pyx_L1_error)
+  __pyx_t_2 = PyObject_RichCompare(__pyx_t_1, __pyx_mstate_global->__pyx_int_0, Py_GE); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 121, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "rugo/parquet/metadata_reader.pyx":104
+  /* "rugo/parquet/metadata_reader.pyx":112
  * 
  * 
  * def has_bloom_filter(dict column):             # <<<<<<<<<<<<<<
@@ -5122,28 +5147,28 @@ __Pyx_RefNannySetupContext("PyInit_parquet", 0);
   if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_read_metadata, __pyx_t_2) < 0) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "rugo/parquet/metadata_reader.pyx":77
+  /* "rugo/parquet/metadata_reader.pyx":80
  * 
  * 
- * def test_bloom_filter(str file_path, long long bloom_offset, long long bloom_length, str value):             # <<<<<<<<<<<<<<
- *     """Test if a value might be present in a bloom filter.
- * 
+ * def test_bloom_filter(             # <<<<<<<<<<<<<<
+ *         str file_path,
+ *         long long bloom_offset,
 */
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_4rugo_7parquet_3test_bloom_filter, 0, __pyx_mstate_global->__pyx_n_u_test_bloom_filter, NULL, __pyx_mstate_global->__pyx_n_u_rugo_parquet, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 77, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_4rugo_7parquet_3test_bloom_filter, 0, __pyx_mstate_global->__pyx_n_u_test_bloom_filter, NULL, __pyx_mstate_global->__pyx_n_u_rugo_parquet, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 80, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_test_bloom_filter, __pyx_t_2) < 0) __PYX_ERR(0, 77, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_test_bloom_filter, __pyx_t_2) < 0) __PYX_ERR(0, 80, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "rugo/parquet/metadata_reader.pyx":104
+  /* "rugo/parquet/metadata_reader.pyx":112
  * 
  * 
  * def has_bloom_filter(dict column):             # <<<<<<<<<<<<<<
  *     """Check if a column has bloom filter information.
  * 
 */
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_4rugo_7parquet_5has_bloom_filter, 0, __pyx_mstate_global->__pyx_n_u_has_bloom_filter, NULL, __pyx_mstate_global->__pyx_n_u_rugo_parquet, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[2])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 104, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_4rugo_7parquet_5has_bloom_filter, 0, __pyx_mstate_global->__pyx_n_u_has_bloom_filter, NULL, __pyx_mstate_global->__pyx_n_u_rugo_parquet, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[2])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 112, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_has_bloom_filter, __pyx_t_2) < 0) __PYX_ERR(0, 104, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_has_bloom_filter, __pyx_t_2) < 0) __PYX_ERR(0, 112, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "rugo/parquet/metadata_reader.pyx":1
@@ -5361,17 +5386,17 @@ static int __Pyx_CreateCodeObjects(__pyx_mstatetype *__pyx_mstate) {
   PyObject* tuple_dedup_map = PyDict_New();
   if (unlikely(!tuple_dedup_map)) return -1;
   {
-    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 7, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 48, 218};
+    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 7, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 48, 219};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_path, __pyx_mstate->__pyx_n_u_fs, __pyx_mstate->__pyx_n_u_result, __pyx_mstate->__pyx_n_u_rg, __pyx_mstate->__pyx_n_u_rg_dict, __pyx_mstate->__pyx_n_u_col, __pyx_mstate->__pyx_n_u_logical_type_str};
-    __pyx_mstate_global->__pyx_codeobj_tab[0] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_rugo_parquet_metadata_reader_pyx, __pyx_mstate->__pyx_n_u_read_metadata, __pyx_k_AT_Ba_a_b_r_q_G2Q_s_wa_3mSXX_dd, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[0])) goto bad;
+    __pyx_mstate_global->__pyx_codeobj_tab[0] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_rugo_parquet_metadata_reader_pyx, __pyx_mstate->__pyx_n_u_read_metadata, __pyx_k_AT_Ba_a_b_r_q_G2Q_s_uCr_3m7_1_1, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[0])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {4, 0, 0, 4, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 77, 50};
+    const __Pyx_PyCode_New_function_description descr = {4, 0, 0, 4, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 80, 50};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_file_path, __pyx_mstate->__pyx_n_u_bloom_offset, __pyx_mstate->__pyx_n_u_bloom_length, __pyx_mstate->__pyx_n_u_value};
     __pyx_mstate_global->__pyx_codeobj_tab[1] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_rugo_parquet_metadata_reader_pyx, __pyx_mstate->__pyx_n_u_test_bloom_filter, __pyx_k_Ba_q_WAQ, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[1])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 1, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 104, 22};
+    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 1, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 112, 22};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_column};
     __pyx_mstate_global->__pyx_codeobj_tab[2] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_rugo_parquet_metadata_reader_pyx, __pyx_mstate->__pyx_n_u_has_bloom_filter, __pyx_k_6_Q_s_Q, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[2])) goto bad;
   }

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "rugo"
 version = "0.1.0"
-description = "File decoders library"
+description = "Parquet Reader"
 readme = "README.md"
 license = {text = "Apache-2.0"}
 authors = [
