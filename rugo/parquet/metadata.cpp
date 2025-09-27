@@ -3,6 +3,7 @@
 #include <fstream>
 #include <cstring>
 #include <stdexcept>
+#include <iostream>
 
 // ------------------- Helpers -------------------
 
@@ -29,27 +30,27 @@ static inline const char* ParquetTypeToString(int t) {
 
 static inline const char* LogicalTypeToString(int t) {
     switch (t) {
-        case 1: return "STRING";
-        case 2: return "MAP";
-        case 3: return "LIST";
-        case 4: return "ENUM";
-        case 5: return "DECIMAL";
-        case 6: return "DATE";
-        case 7: return "TIME_MILLIS";
-        case 8: return "TIME_MICROS";
-        case 9: return "TIMESTAMP_MILLIS";
-        case 10: return "TIMESTAMP_MICROS";
-        case 11: return "UINT_8";
-        case 12: return "UINT_16";
-        case 13: return "UINT_32";
-        case 14: return "UINT_64";
-        case 15: return "INT_8";
-        case 16: return "INT_16";
-        case 17: return "INT_32";
-        case 18: return "INT_64";
-        case 19: return "JSON";
-        case 20: return "BSON";
-        case 21: return "INTERVAL";
+        case 0: return "UTF8";        // Actually the most common one!
+        case 1: return "MAP";
+        case 2: return "LIST";
+        case 3: return "ENUM";
+        case 4: return "DECIMAL";
+        case 5: return "DATE";
+        case 6: return "TIME_MILLIS";
+        case 7: return "TIME_MICROS";
+        case 8: return "TIMESTAMP_MILLIS";
+        case 9: return "TIMESTAMP_MICROS";
+        case 10: return "UINT_8";
+        case 11: return "UINT_16";
+        case 12: return "UINT_32";
+        case 13: return "UINT_64";
+        case 14: return "INT_8";
+        case 15: return "INT_16";
+        case 16: return "INT_32";
+        case 17: return "INT_64";
+        case 18: return "JSON";
+        case 19: return "BSON";
+        case 20: return "INTERVAL";
         default: return "";
     }
 }
@@ -62,94 +63,172 @@ struct SchemaElement {
     int num_children = 0;
 };
 
-// Parse a LogicalType structure
+// Correct logical type structure parsing
 static std::string ParseLogicalType(TInput& in) {
+    std::string result;
     int16_t last_id = 0;
+
     while (true) {
         auto fh = ReadFieldHeader(in, last_id);
         if (fh.type == 0) break;
-        
+
         switch (fh.id) {
-            case 1: return "STRING";          // STRING
-            case 2: return "MAP";             // MAP
-            case 3: return "LIST";            // LIST  
-            case 4: return "ENUM";            // ENUM
-            case 5: {                         // DECIMAL
+            case 1: { // STRING (StringType - empty struct)
+                SkipStruct(in); // Just skip the empty StringType struct
+                result = "STRING";
+                break;
+            }
+            case 2: { // MAP (MapType - empty struct)
+                SkipStruct(in);
+                result = "MAP";
+                break;
+            }
+            case 3: { // LIST (ListType - empty struct)
+                SkipStruct(in);
+                result = "LIST";
+                break;
+            }
+            case 4: { // ENUM (EnumType - empty struct)
+                SkipStruct(in);
+                result = "ENUM";
+                break;
+            }
+            case 5: { // DECIMAL (DecimalType)
+                int32_t scale = 0, precision = 0;
                 int16_t decimal_last = 0;
                 while (true) {
-                    auto dfh = ReadFieldHeader(in, decimal_last);
-                    if (dfh.type == 0) break;
-                    SkipField(in, dfh.type);
+                    auto inner = ReadFieldHeader(in, decimal_last);
+                    if (inner.type == 0) break;
+                    if (inner.id == 1) scale = ReadI32(in);
+                    else if (inner.id == 2) precision = ReadI32(in);
+                    else SkipField(in, inner.type);
                 }
-                return "DECIMAL";
+                result = "DECIMAL(" + std::to_string(precision) + "," + std::to_string(scale) + ")";
+                break;
             }
-            case 6: return "DATE";            // DATE
-            case 7: {                         // TIME
+            case 6: { // DATE (DateType - empty struct)
+                SkipStruct(in);
+                result = "DATE";
+                break;
+            }
+            case 7: { // TIME (TimeType)
                 int16_t time_last = 0;
+                bool isAdjustedToUTC = false;
+                std::string unit = "MILLIS";
                 while (true) {
-                    auto tfh = ReadFieldHeader(in, time_last);
-                    if (tfh.type == 0) break;
-                    if (tfh.id == 1) {
-                        bool is_adjusted_utc = (in.readByte() != 0);
-                        (void)is_adjusted_utc; // unused for now
-                    } else if (tfh.id == 2) {
-                        int32_t unit = ReadI32(in);
-                        if (unit == 0) return "TIME_MILLIS";
-                        else if (unit == 1) return "TIME_MICROS";
-                        else return "TIME";
+                    auto inner = ReadFieldHeader(in, time_last);
+                    if (inner.type == 0) break;
+                    if (inner.id == 1) isAdjustedToUTC = (ReadBool(in) != 0);
+                    else if (inner.id == 2) { // unit
+                        int16_t unit_last = 0;
+                        while (true) {
+                            auto unit_fh = ReadFieldHeader(in, unit_last);
+                            if (unit_fh.type == 0) break;
+                            if (unit_fh.id == 1) { // MILLIS
+                                SkipStruct(in);
+                                unit = "MILLIS";
+                            } else if (unit_fh.id == 2) { // MICROS
+                                SkipStruct(in);
+                                unit = "MICROS";
+                            } else if (unit_fh.id == 3) { // NANOS
+                                SkipStruct(in);
+                                unit = "NANOS";
+                            } else {
+                                SkipField(in, unit_fh.type);
+                            }
+                        }
                     } else {
-                        SkipField(in, tfh.type);
+                        SkipField(in, inner.type);
                     }
                 }
-                return "TIME";
+                result = "TIME(" + unit + (isAdjustedToUTC ? ",UTC" : "") + ")";
+                SkipStruct(in);
+                break;
             }
-            case 8: {                         // TIMESTAMP
+            case 8: { // TIMESTAMP (TimestampType)
                 int16_t ts_last = 0;
+                bool isAdjustedToUTC = false;
+                std::string unit = "MILLIS";
                 while (true) {
-                    auto tsfh = ReadFieldHeader(in, ts_last);
-                    if (tsfh.type == 0) break;
-                    if (tsfh.id == 1) {
-                        bool is_adjusted_utc = (in.readByte() != 0);
-                        (void)is_adjusted_utc; // unused for now
-                    } else if (tsfh.id == 2) {
-                        int32_t unit = ReadI32(in);
-                        if (unit == 0) return "TIMESTAMP_MILLIS";
-                        else if (unit == 1) return "TIMESTAMP_MICROS";
-                        else return "TIMESTAMP";
+                    auto inner = ReadFieldHeader(in, ts_last);
+                    if (inner.type == 0) break;
+                    if (inner.id == 1) isAdjustedToUTC = (ReadBool(in) != 0);
+                    else if (inner.id == 2) { // unit
+                        int16_t unit_last = 0;
+                        while (true) {
+                            auto unit_fh = ReadFieldHeader(in, unit_last);
+                            if (unit_fh.type == 0) break;
+                            if (unit_fh.id == 1) { // MILLIS
+                                SkipStruct(in);
+                                unit = "MILLIS";
+                            } else if (unit_fh.id == 2) { // MICROS
+                                SkipStruct(in);
+                                unit = "MICROS";
+                            } else if (unit_fh.id == 3) { // NANOS
+                                SkipStruct(in);
+                                unit = "NANOS";
+                            } else {
+                                SkipField(in, unit_fh.type);
+                            }
+                        }
                     } else {
-                        SkipField(in, tsfh.type);
+                        SkipField(in, inner.type);
                     }
                 }
-                return "TIMESTAMP";
+                result = "TIMESTAMP(" + unit + (isAdjustedToUTC ? ",UTC" : "") + ")";
+                SkipStruct(in);
+                break;
             }
-            case 9: {                         // INTEGER  
+            case 10: { // INTEGER (IntType)
                 int16_t int_last = 0;
+                int8_t bitWidth = 0;
+                bool isSigned = true;
+
                 while (true) {
-                    auto ifh = ReadFieldHeader(in, int_last);
-                    if (ifh.type == 0) break;
-                    if (ifh.id == 1) {
-                        int8_t bit_width = (int8_t)in.readByte();
-                        (void)bit_width; // unused for now
-                    } else if (ifh.id == 2) {
-                        bool is_signed = (in.readByte() != 0);
-                        if (is_signed) return "INT";
-                        else return "UINT";
+                    auto inner = ReadFieldHeader(in, int_last);
+                    if (inner.type == 0) break;  // STOP
+
+                    if (inner.id == 1) {
+                        // bitWidth is just a single byte
+                        bitWidth = static_cast<int8_t>(in.readByte());
+                    } else if (inner.id == 2) {
+                        if (inner.type == T_BOOL_TRUE) {
+                            isSigned = true;
+                        } else if (inner.type == T_BOOL_FALSE) {
+                            isSigned = false;
+                        } else {
+                            isSigned = ReadBool(in);
+                        }
                     } else {
-                        SkipField(in, ifh.type);
+                        SkipField(in, inner.type); // future-proof
                     }
                 }
-                return "INT";
+
+                result = (isSigned ? "INT" : "UINT") + std::to_string((int)bitWidth);
+                break;
             }
-            case 10: return "JSON";           // JSON
-            case 11: return "BSON";           // BSON
-            case 12: return "UUID";           // UUID
-            case 13: return "FLOAT16";        // FLOAT16
+            case 11: { // UNKNOWN (NullType - empty)
+                SkipStruct(in);
+                result = "UNKNOWN";
+                break;
+            }
+            case 12: { // JSON (JsonType - empty)
+                SkipStruct(in);
+                result = "JSON";
+                break;
+            }
+            case 13: { // BSON (BsonType - empty)
+                SkipStruct(in);
+                result = "BSON";
+                break;
+            }
             default:
                 SkipField(in, fh.type);
                 break;
         }
     }
-    return "";
+
+    return result;
 }
 
 // Parse a SchemaElement 
@@ -159,7 +238,7 @@ static SchemaElement ParseSchemaElement(TInput& in) {
     while (true) {
         auto fh = ReadFieldHeader(in, last_id);
         if (fh.type == 0) break;
-        
+
         switch (fh.id) {
             case 1: { // type (Physical type)
                 int32_t t = ReadI32(in);
@@ -186,7 +265,9 @@ static SchemaElement ParseSchemaElement(TInput& in) {
             }
             case 6: { // converted_type (legacy logical type)
                 int32_t ct = ReadI32(in);
-                elem.logical_type = LogicalTypeToString(ct);
+                if (elem.logical_type.empty()) { // Only use legacy if new type not set
+                    elem.logical_type = LogicalTypeToString(ct);
+                }
                 break;
             }
             case 7: { // scale (for DECIMAL)
@@ -358,6 +439,31 @@ static void ParseRowGroup(TInput& in, RowGroupStats& rg) {
     }
 }
 
+// ------------------- Schema Walker -------------------
+
+// Walk schema tree recursively
+static void WalkSchema(TInput& in, int remaining,
+                       int indent,
+                       std::string parent_path,
+                       std::unordered_map<std::string, std::string>& logical_type_map) {
+    for (int i = 0; i < remaining; i++) {
+        SchemaElement elem = ParseSchemaElement(in);
+
+        // build the current path
+        std::string path = parent_path.empty() ? elem.name : parent_path + "." + elem.name;
+
+        // record logical type if present
+        if (!elem.logical_type.empty()) {
+            logical_type_map[path] = elem.logical_type;
+        }
+
+        // recurse into children
+        if (elem.num_children > 0) {
+            WalkSchema(in, elem.num_children, indent + 1, path, logical_type_map);
+        }
+    }
+}
+
 static FileStats ParseFileMeta(TInput& in) {
     FileStats fs;
     std::unordered_map<std::string, std::string> logical_type_map; // path -> logical_type
@@ -368,23 +474,9 @@ static FileStats ParseFileMeta(TInput& in) {
         if (fh.type == 0) break;
 
         switch (fh.id) {
-            case 1: { // schema (list<SchemaElement>) - parse to extract logical types
+            case 2: { // schema (list<SchemaElement>)
                 auto lh = ReadListHeader(in);
-                std::vector<SchemaElement> schema_stack;
-                
-                for (uint32_t i = 0; i < lh.size; i++) {
-                    SchemaElement elem = ParseSchemaElement(in);
-                    
-                    // Build full path for non-root elements
-                    if (i > 0 && !elem.name.empty()) { // Skip root element
-                        std::string full_path = elem.name;
-                        
-                        // If this element has a logical type, map it
-                        if (!elem.logical_type.empty()) {
-                            logical_type_map[full_path] = elem.logical_type;
-                        }
-                    }
-                }
+                WalkSchema(in, 1, 0, "", logical_type_map);
                 break;
             }
             case 3: fs.num_rows = ReadI64(in); break;
@@ -411,8 +503,9 @@ static FileStats ParseFileMeta(TInput& in) {
                             } else if (col.physical_type == "INT64") {
                                 // Could be TIMESTAMP_MILLIS/MICROS, for now leave empty unless explicitly defined
                                 col.logical_type = "";
+                            } else {
+                                col.logical_type = col.physical_type; // Fallback to physical type
                             }
-                            // For BOOLEAN, FLOAT, DOUBLE - physical type is usually the logical type too
                         }
                     }
                     

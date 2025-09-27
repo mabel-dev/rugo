@@ -209,3 +209,7 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+tests/data/42004e494300.parquet
+tests/data/hits_51.parquet
