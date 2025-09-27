@@ -63,10 +63,59 @@ for i, row_group in enumerate(metadata['row_groups']):
     
     for col in row_group['columns']:
         print(f"    Column: {col['name']}")
-        print(f"    Type: {col['type']}")
+        print(f"    Physical Type: {col['type']}")
+        print(f"    Logical Type: {col.get('logical_type', '(none)')}")
         print(f"    Nulls: {col['null_count']}")
         print(f"    Min: {col['min']}")
         print(f"    Max: {col['max']}")
+        
+        # Check for bloom filter
+        if parquet_meta.has_bloom_filter(col):
+            print(f"    Has bloom filter: Yes")
+        else:
+            print(f"    Has bloom filter: No")
+```
+
+### New Features (v2.0+)
+
+#### Logical Type Support
+
+Rugo now extracts both physical and logical type information:
+
+```python
+import rugo.parquet as parquet_meta
+
+metadata = parquet_meta.read_metadata("example.parquet")
+for col in metadata['row_groups'][0]['columns']:
+    print(f"{col['name']}: {col['type']} -> {col.get('logical_type', '(inferred)')}")
+    # Example output:
+    # name: BYTE_ARRAY -> STRING
+    # timestamp: INT64 -> TIMESTAMP_MILLIS
+    # price: DOUBLE -> (inferred)
+```
+
+#### Bloom Filter Testing
+
+Test if values might exist in columns with bloom filters:
+
+```python
+import rugo.parquet as parquet_meta
+
+metadata = parquet_meta.read_metadata("example.parquet")
+
+for col in metadata['row_groups'][0]['columns']:
+    if parquet_meta.has_bloom_filter(col):
+        # Test if a value might be present
+        might_exist = parquet_meta.test_bloom_filter(
+            "example.parquet",
+            col['bloom_offset'],
+            col['bloom_length'], 
+            "search_value"
+        )
+        if might_exist:
+            print(f"Value might be in column {col['name']}")
+        else:
+            print(f"Value definitely not in column {col['name']}")
 ```
 
 ### Metadata Structure
@@ -84,10 +133,13 @@ The `read_metadata()` function returns a dictionary with the following structure
                 {
                     "name": str,           # Column name/path
                     "type": str,           # Physical type (INT64, BYTE_ARRAY, etc.)
+                    "logical_type": str,   # Logical type (STRING, TIMESTAMP_MILLIS, etc.)
                     "min": any,            # Minimum value (decoded)
                     "max": any,            # Maximum value (decoded)
                     "null_count": int,     # Number of null values
                     "bloom_offset": int,   # Bloom filter offset (-1 if none)
+                    "bloom_length": int,   # Bloom filter length (-1 if unknown)
+                }
                     "bloom_length": int,   # Bloom filter length (-1 if none)
                 }
             ]

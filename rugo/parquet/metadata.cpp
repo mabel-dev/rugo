@@ -399,6 +399,20 @@ static FileStats ParseFileMeta(TInput& in) {
                         auto it = logical_type_map.find(col.name);
                         if (it != logical_type_map.end()) {
                             col.logical_type = it->second;
+                        } else {
+                            // Infer common logical types from physical types when not explicitly defined
+                            if (col.physical_type == "BYTE_ARRAY") {
+                                col.logical_type = "STRING"; // Most BYTE_ARRAY are strings
+                            } else if (col.physical_type == "INT96") {
+                                col.logical_type = "TIMESTAMP_NANOS"; // INT96 is usually timestamp
+                            } else if (col.physical_type == "INT32") {
+                                // Could be DATE, TIME, etc. - for now leave empty unless explicitly defined
+                                col.logical_type = "";
+                            } else if (col.physical_type == "INT64") {
+                                // Could be TIMESTAMP_MILLIS/MICROS, for now leave empty unless explicitly defined
+                                col.logical_type = "";
+                            }
+                            // For BOOLEAN, FLOAT, DOUBLE - physical type is usually the logical type too
                         }
                     }
                     
@@ -461,47 +475,77 @@ static inline uint32_t Hash2(const std::string& data) {
 }
 
 bool TestBloomFilter(const std::string& file_path, int64_t bloom_offset, int64_t bloom_length, const std::string& value) {
-    if (bloom_offset < 0 || bloom_length <= 0) {
+    if (bloom_offset < 0) {
         return false; // No bloom filter
     }
     
-    std::ifstream f(file_path, std::ios::binary);
+    std::ifstream f(file_path, std::ios::binary | std::ios::ate);
     if (!f.is_open()) {
         return false;
     }
     
+    size_t file_size = f.tellg();
+    
+    // If bloom_length is not provided, we need to calculate it
+    int64_t actual_bloom_length = bloom_length;
+    if (actual_bloom_length <= 0) {
+        // Try to read bloom filter header to determine size
+        f.seekg(bloom_offset);
+        if (bloom_offset + 12 > (int64_t)file_size) {
+            return false; // Not enough space for header
+        }
+        
+        uint8_t header[12];
+        f.read((char*)header, 12);
+        
+        if (!f.good()) {
+            return false;
+        }
+        
+        // Parse bloom filter header to determine actual length
+        uint32_t num_hash_functions = ReadLE32(header);
+        uint32_t num_blocks = ReadLE32(header + 4);
+        
+        if (num_hash_functions == 0 || num_blocks == 0 || num_hash_functions > 10 || num_blocks > 1024) {
+            // Invalid or unreasonable values, try alternative interpretation
+            // Some bloom filters might be structured differently
+            actual_bloom_length = 1024; // Use a reasonable default
+        } else {
+            // Calculate length: header + (32 bytes per block)
+            actual_bloom_length = 12 + (num_blocks * 32);
+        }
+    }
+    
     // Read the bloom filter data
     f.seekg(bloom_offset);
-    std::vector<uint8_t> bloom_data(bloom_length);
-    f.read((char*)bloom_data.data(), bloom_length);
+    std::vector<uint8_t> bloom_data(actual_bloom_length);
+    f.read((char*)bloom_data.data(), actual_bloom_length);
     
     if (!f.good()) {
         return false;
     }
     
-    // Parse bloom filter header (Parquet split block bloom filter format)
-    if (bloom_length < 12) {
+    // Parse bloom filter header
+    if (actual_bloom_length < 12) {
         return false; // Too small to be valid
     }
     
-    // Read bloom filter metadata (simplified - Parquet bloom filters have a specific format)
     const uint8_t* data = bloom_data.data();
     uint32_t num_hash_functions = ReadLE32(data);
     uint32_t num_blocks = ReadLE32(data + 4);
     
-    if (num_hash_functions == 0 || num_blocks == 0) {
+    if (num_hash_functions == 0 || num_blocks == 0 || num_hash_functions > 10 || num_blocks > 1024) {
         return false; // Invalid bloom filter
     }
     
-    // Simple bloom filter test (this is a simplified version)
-    // Parquet uses split block bloom filter with specific hash functions
+    // Simple bloom filter test using Parquet's split block bloom filter approach
     uint32_t h1 = Hash1(value);
     uint32_t h2 = Hash2(value);
     
-    size_t bits_per_block = 256; // Common size for Parquet bloom filters
+    size_t bits_per_block = 256; // Standard for Parquet bloom filters
     size_t block_size = bits_per_block / 8; // 32 bytes per block
     
-    if (bloom_length < (int64_t)(12 + num_blocks * block_size)) {
+    if (actual_bloom_length < (int64_t)(12 + num_blocks * block_size)) {
         return false; // Not enough data
     }
     
