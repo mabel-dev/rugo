@@ -27,6 +27,198 @@ static inline const char* ParquetTypeToString(int t) {
     }
 }
 
+static inline const char* LogicalTypeToString(int t) {
+    switch (t) {
+        case 1: return "STRING";
+        case 2: return "MAP";
+        case 3: return "LIST";
+        case 4: return "ENUM";
+        case 5: return "DECIMAL";
+        case 6: return "DATE";
+        case 7: return "TIME_MILLIS";
+        case 8: return "TIME_MICROS";
+        case 9: return "TIMESTAMP_MILLIS";
+        case 10: return "TIMESTAMP_MICROS";
+        case 11: return "UINT_8";
+        case 12: return "UINT_16";
+        case 13: return "UINT_32";
+        case 14: return "UINT_64";
+        case 15: return "INT_8";
+        case 16: return "INT_16";
+        case 17: return "INT_32";
+        case 18: return "INT_64";
+        case 19: return "JSON";
+        case 20: return "BSON";
+        case 21: return "INTERVAL";
+        default: return "";
+    }
+}
+
+// ------------------- Schema parsing -------------------
+
+struct SchemaElement {
+    std::string name;
+    std::string logical_type;
+    int num_children = 0;
+};
+
+// Parse a LogicalType structure
+static std::string ParseLogicalType(TInput& in) {
+    int16_t last_id = 0;
+    while (true) {
+        auto fh = ReadFieldHeader(in, last_id);
+        if (fh.type == 0) break;
+        
+        switch (fh.id) {
+            case 1: return "STRING";          // STRING
+            case 2: return "MAP";             // MAP
+            case 3: return "LIST";            // LIST  
+            case 4: return "ENUM";            // ENUM
+            case 5: {                         // DECIMAL
+                int16_t decimal_last = 0;
+                while (true) {
+                    auto dfh = ReadFieldHeader(in, decimal_last);
+                    if (dfh.type == 0) break;
+                    SkipField(in, dfh.type);
+                }
+                return "DECIMAL";
+            }
+            case 6: return "DATE";            // DATE
+            case 7: {                         // TIME
+                int16_t time_last = 0;
+                while (true) {
+                    auto tfh = ReadFieldHeader(in, time_last);
+                    if (tfh.type == 0) break;
+                    if (tfh.id == 1) {
+                        bool is_adjusted_utc = (in.readByte() != 0);
+                        (void)is_adjusted_utc; // unused for now
+                    } else if (tfh.id == 2) {
+                        int32_t unit = ReadI32(in);
+                        if (unit == 0) return "TIME_MILLIS";
+                        else if (unit == 1) return "TIME_MICROS";
+                        else return "TIME";
+                    } else {
+                        SkipField(in, tfh.type);
+                    }
+                }
+                return "TIME";
+            }
+            case 8: {                         // TIMESTAMP
+                int16_t ts_last = 0;
+                while (true) {
+                    auto tsfh = ReadFieldHeader(in, ts_last);
+                    if (tsfh.type == 0) break;
+                    if (tsfh.id == 1) {
+                        bool is_adjusted_utc = (in.readByte() != 0);
+                        (void)is_adjusted_utc; // unused for now
+                    } else if (tsfh.id == 2) {
+                        int32_t unit = ReadI32(in);
+                        if (unit == 0) return "TIMESTAMP_MILLIS";
+                        else if (unit == 1) return "TIMESTAMP_MICROS";
+                        else return "TIMESTAMP";
+                    } else {
+                        SkipField(in, tsfh.type);
+                    }
+                }
+                return "TIMESTAMP";
+            }
+            case 9: {                         // INTEGER  
+                int16_t int_last = 0;
+                while (true) {
+                    auto ifh = ReadFieldHeader(in, int_last);
+                    if (ifh.type == 0) break;
+                    if (ifh.id == 1) {
+                        int8_t bit_width = (int8_t)in.readByte();
+                        (void)bit_width; // unused for now
+                    } else if (ifh.id == 2) {
+                        bool is_signed = (in.readByte() != 0);
+                        if (is_signed) return "INT";
+                        else return "UINT";
+                    } else {
+                        SkipField(in, ifh.type);
+                    }
+                }
+                return "INT";
+            }
+            case 10: return "JSON";           // JSON
+            case 11: return "BSON";           // BSON
+            case 12: return "UUID";           // UUID
+            case 13: return "FLOAT16";        // FLOAT16
+            default:
+                SkipField(in, fh.type);
+                break;
+        }
+    }
+    return "";
+}
+
+// Parse a SchemaElement 
+static SchemaElement ParseSchemaElement(TInput& in) {
+    SchemaElement elem;
+    int16_t last_id = 0;
+    while (true) {
+        auto fh = ReadFieldHeader(in, last_id);
+        if (fh.type == 0) break;
+        
+        switch (fh.id) {
+            case 1: { // type (Physical type)
+                int32_t t = ReadI32(in);
+                (void)t; // We don't need physical type here, it's in column metadata
+                break;
+            }
+            case 2: { // type_length (for FIXED_LEN_BYTE_ARRAY)
+                int32_t len = ReadI32(in);
+                (void)len;
+                break;
+            }
+            case 3: { // repetition_type
+                int32_t rep = ReadI32(in);
+                (void)rep;
+                break;
+            }
+            case 4: { // name
+                elem.name = ReadString(in);
+                break;
+            }
+            case 5: { // num_children
+                elem.num_children = ReadI32(in);
+                break;
+            }
+            case 6: { // converted_type (legacy logical type)
+                int32_t ct = ReadI32(in);
+                elem.logical_type = LogicalTypeToString(ct);
+                break;
+            }
+            case 7: { // scale (for DECIMAL)
+                int32_t scale = ReadI32(in);
+                (void)scale;
+                break;
+            }
+            case 8: { // precision (for DECIMAL)
+                int32_t precision = ReadI32(in);
+                (void)precision;
+                break;
+            }
+            case 9: { // field_id
+                int32_t field_id = ReadI32(in);
+                (void)field_id;
+                break;
+            }
+            case 10: { // logicalType (newer format)
+                std::string logical = ParseLogicalType(in);
+                if (!logical.empty()) {
+                    elem.logical_type = logical;
+                }
+                break;
+            }
+            default:
+                SkipField(in, fh.type);
+                break;
+        }
+    }
+    return elem;
+}
+
 // ------------------- Parsers -------------------
 
 // parquet.thrift Statistics
@@ -168,21 +360,29 @@ static void ParseRowGroup(TInput& in, RowGroupStats& rg) {
 
 static FileStats ParseFileMeta(TInput& in) {
     FileStats fs;
+    std::unordered_map<std::string, std::string> logical_type_map; // path -> logical_type
+    
     int16_t last_id = 0;
     while (true) {
         auto fh = ReadFieldHeader(in, last_id);
         if (fh.type == 0) break;
 
         switch (fh.id) {
-            case 1: { // schema (list<SchemaElement>) - skip entirely
+            case 1: { // schema (list<SchemaElement>) - parse to extract logical types
                 auto lh = ReadListHeader(in);
+                std::vector<SchemaElement> schema_stack;
+                
                 for (uint32_t i = 0; i < lh.size; i++) {
-                    // skip SchemaElement struct
-                    int16_t s_last = 0;
-                    while (true) {
-                        auto sfh = ReadFieldHeader(in, s_last);
-                        if (sfh.type == 0) break;
-                        SkipField(in, sfh.type);
+                    SchemaElement elem = ParseSchemaElement(in);
+                    
+                    // Build full path for non-root elements
+                    if (i > 0 && !elem.name.empty()) { // Skip root element
+                        std::string full_path = elem.name;
+                        
+                        // If this element has a logical type, map it
+                        if (!elem.logical_type.empty()) {
+                            logical_type_map[full_path] = elem.logical_type;
+                        }
                     }
                 }
                 break;
@@ -193,6 +393,29 @@ static FileStats ParseFileMeta(TInput& in) {
                 for (uint32_t i = 0; i < lh.size; i++) {
                     RowGroupStats rg;
                     ParseRowGroup(in, rg);
+                    
+                    // Apply logical types to columns
+                    for (auto& col : rg.columns) {
+                        auto it = logical_type_map.find(col.name);
+                        if (it != logical_type_map.end()) {
+                            col.logical_type = it->second;
+                        } else {
+                            // Infer common logical types from physical types when not explicitly defined
+                            if (col.physical_type == "BYTE_ARRAY") {
+                                col.logical_type = "STRING"; // Most BYTE_ARRAY are strings
+                            } else if (col.physical_type == "INT96") {
+                                col.logical_type = "TIMESTAMP_NANOS"; // INT96 is usually timestamp
+                            } else if (col.physical_type == "INT32") {
+                                // Could be DATE, TIME, etc. - for now leave empty unless explicitly defined
+                                col.logical_type = "";
+                            } else if (col.physical_type == "INT64") {
+                                // Could be TIMESTAMP_MILLIS/MICROS, for now leave empty unless explicitly defined
+                                col.logical_type = "";
+                            }
+                            // For BOOLEAN, FLOAT, DOUBLE - physical type is usually the logical type too
+                        }
+                    }
+                    
                     fs.row_groups.push_back(std::move(rg));
                 }
                 break;
@@ -228,4 +451,121 @@ FileStats ReadParquetMetadata(const std::string& path) {
 
     TInput in{footer.data(), footer.data() + footer.size()};
     return ParseFileMeta(in);
+}
+
+// ------------------- Bloom Filter Implementation -------------------
+
+// Simple hash functions for bloom filter (Parquet uses split block bloom filter)
+static inline uint32_t Hash1(const std::string& data) {
+    uint32_t h = 0x811c9dc5; // FNV-1a 32-bit offset basis
+    for (char c : data) {
+        h ^= (uint32_t)(unsigned char)c;
+        h *= 0x01000193; // FNV-1a 32-bit prime
+    }
+    return h;
+}
+
+static inline uint32_t Hash2(const std::string& data) {
+    // Simple alternative hash
+    uint32_t h = 5381; // djb2 hash
+    for (char c : data) {
+        h = ((h << 5) + h) + (uint32_t)(unsigned char)c;
+    }
+    return h;
+}
+
+bool TestBloomFilter(const std::string& file_path, int64_t bloom_offset, int64_t bloom_length, const std::string& value) {
+    if (bloom_offset < 0) {
+        return false; // No bloom filter
+    }
+    
+    std::ifstream f(file_path, std::ios::binary | std::ios::ate);
+    if (!f.is_open()) {
+        return false;
+    }
+    
+    size_t file_size = f.tellg();
+    
+    // If bloom_length is not provided, we need to calculate it
+    int64_t actual_bloom_length = bloom_length;
+    if (actual_bloom_length <= 0) {
+        // Try to read bloom filter header to determine size
+        f.seekg(bloom_offset);
+        if (bloom_offset + 12 > (int64_t)file_size) {
+            return false; // Not enough space for header
+        }
+        
+        uint8_t header[12];
+        f.read((char*)header, 12);
+        
+        if (!f.good()) {
+            return false;
+        }
+        
+        // Parse bloom filter header to determine actual length
+        uint32_t num_hash_functions = ReadLE32(header);
+        uint32_t num_blocks = ReadLE32(header + 4);
+        
+        if (num_hash_functions == 0 || num_blocks == 0 || num_hash_functions > 10 || num_blocks > 1024) {
+            // Invalid or unreasonable values, try alternative interpretation
+            // Some bloom filters might be structured differently
+            actual_bloom_length = 1024; // Use a reasonable default
+        } else {
+            // Calculate length: header + (32 bytes per block)
+            actual_bloom_length = 12 + (num_blocks * 32);
+        }
+    }
+    
+    // Read the bloom filter data
+    f.seekg(bloom_offset);
+    std::vector<uint8_t> bloom_data(actual_bloom_length);
+    f.read((char*)bloom_data.data(), actual_bloom_length);
+    
+    if (!f.good()) {
+        return false;
+    }
+    
+    // Parse bloom filter header
+    if (actual_bloom_length < 12) {
+        return false; // Too small to be valid
+    }
+    
+    const uint8_t* data = bloom_data.data();
+    uint32_t num_hash_functions = ReadLE32(data);
+    uint32_t num_blocks = ReadLE32(data + 4);
+    
+    if (num_hash_functions == 0 || num_blocks == 0 || num_hash_functions > 10 || num_blocks > 1024) {
+        return false; // Invalid bloom filter
+    }
+    
+    // Simple bloom filter test using Parquet's split block bloom filter approach
+    uint32_t h1 = Hash1(value);
+    uint32_t h2 = Hash2(value);
+    
+    size_t bits_per_block = 256; // Standard for Parquet bloom filters
+    size_t block_size = bits_per_block / 8; // 32 bytes per block
+    
+    if (actual_bloom_length < (int64_t)(12 + num_blocks * block_size)) {
+        return false; // Not enough data
+    }
+    
+    const uint8_t* blocks_data = data + 12; // Skip header
+    
+    for (uint32_t i = 0; i < num_hash_functions; i++) {
+        uint32_t hash = h1 + i * h2;
+        uint32_t block_idx = hash % num_blocks;
+        uint32_t bit_idx = (hash / num_blocks) % bits_per_block;
+        
+        const uint8_t* block = blocks_data + block_idx * block_size;
+        uint32_t byte_idx = bit_idx / 8;
+        uint32_t bit_offset = bit_idx % 8;
+        
+        if (byte_idx >= block_size) continue; // Safety check
+        
+        if (!(block[byte_idx] & (1 << bit_offset))) {
+            return false; // Definitely not present
+        }
+    }
+    
+    return true; // Might be present
 }

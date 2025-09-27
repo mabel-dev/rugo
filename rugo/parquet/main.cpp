@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <cstring>
 
 auto dump_bytes = [](const std::string& s) {
     bool printable = true;
@@ -81,7 +82,8 @@ int main(int argc, char** argv) {
 
             std::cout << "  Column " << j
                       << " name=" << col.name
-                      << " type=" << col.physical_type
+                      << " physical_type=" << col.physical_type
+                      << " logical_type=" << col.logical_type
                       << " min=" << min_str
                       << " max=" << max_str
                       << " nulls=" << col.null_count
