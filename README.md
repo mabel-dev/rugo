@@ -3,15 +3,16 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
 
-A high-performance Cython-based library for decoding various file formats, with a focus on fast Parquet metadata extraction.
+A lightning-fast Parquet file reader built with C++ and Cython, optimized for ultra-fast metadata extraction and analysis.
 
 ## 🚀 Features
 
-- **Ultra-fast Parquet metadata reading** - C++ implementation with Cython bindings
-- **Minimal dependencies** - Zero runtime dependencies for core functionality  
-- **High performance** - Optimized for speed with direct binary parsing
-- **Compatible** - Validated against PyArrow for accuracy
-- **Cross-platform** - Works on Linux, macOS, and Windows
+- **🚀 Lightning-fast metadata reading** - 10-50x faster than PyArrow for metadata operations
+- **🏗️ C++ core with Cython bindings** - Maximum performance with Python convenience
+- **📊 Complete schema information** - Physical types, logical types, and statistics
+- **🌸 Bloom filter support** - Test value presence without reading data
+- **🔬 Zero dependencies** - No runtime dependencies for core functionality
+- **✅ PyArrow compatible** - Validated results, drop-in replacement for metadata operations
 
 ## 📦 Installation
 
@@ -46,16 +47,18 @@ pip install -e .
 
 ### Reading Parquet Metadata
 
+Rugo provides blazing-fast access to Parquet file metadata without the overhead of loading actual data:
+
 ```python
 import rugo.parquet as parquet_meta
 
-# Extract metadata from a Parquet file
+# Extract complete metadata from a Parquet file
 metadata = parquet_meta.read_metadata("example.parquet")
 
 print(f"Number of rows: {metadata['num_rows']}")
 print(f"Number of row groups: {len(metadata['row_groups'])}")
 
-# Iterate through row groups and columns
+# Analyze row groups and column statistics
 for i, row_group in enumerate(metadata['row_groups']):
     print(f"Row Group {i}:")
     print(f"  Rows: {row_group['num_rows']}")
@@ -69,18 +72,18 @@ for i, row_group in enumerate(metadata['row_groups']):
         print(f"    Min: {col['min']}")
         print(f"    Max: {col['max']}")
         
-        # Check for bloom filter
+        # Check for bloom filter availability
         if parquet_meta.has_bloom_filter(col):
             print(f"    Has bloom filter: Yes")
         else:
             print(f"    Has bloom filter: No")
 ```
 
-### New Features (v2.0+)
+### Advanced Features
 
-#### Logical Type Support
+#### Schema Analysis
 
-Rugo now extracts both physical and logical type information:
+Extract detailed schema information including both physical and logical types:
 
 ```python
 import rugo.parquet as parquet_meta
@@ -96,7 +99,7 @@ for col in metadata['row_groups'][0]['columns']:
 
 #### Bloom Filter Testing
 
-Test if values might exist in columns with bloom filters:
+Quickly test if values might exist in columns without reading the actual data:
 
 ```python
 import rugo.parquet as parquet_meta
@@ -138,8 +141,6 @@ The `read_metadata()` function returns a dictionary with the following structure
                     "max": any,            # Maximum value (decoded)
                     "null_count": int,     # Number of null values
                     "bloom_offset": int,   # Bloom filter offset (-1 if none)
-                    "bloom_length": int,   # Bloom filter length (-1 if unknown)
-                }
                     "bloom_length": int,   # Bloom filter length (-1 if none)
                 }
             ]
@@ -150,16 +151,25 @@ The `read_metadata()` function returns a dictionary with the following structure
 
 ## ⚡ Performance
 
-Rugo is designed for speed. Here are some benchmarks compared to PyArrow:
+Rugo is specifically designed for blazing-fast Parquet metadata operations:
 
-- **Metadata extraction**: ~10-50x faster than PyArrow for metadata-only operations
-- **Memory usage**: Minimal memory footprint with direct binary parsing
-- **Startup time**: Fast import with compiled extensions
+- **⚡ 10-50x faster** than PyArrow for metadata extraction
+- **🧠 Minimal memory footprint** - Direct binary parsing without intermediate objects
+- **🚀 Lightning startup** - Fast imports with optimized compiled extensions
+- **📊 Efficient statistics** - Decode min/max values without loading columns
 
-Run benchmarks yourself:
+### Benchmarks
+
+Run performance comparisons yourself:
 ```bash
-make test  # Includes performance comparison tests
+make test  # Includes comprehensive PyArrow vs Rugo benchmarks
 ```
+
+**Why is Rugo so fast?**
+- Direct C++ implementation of Parquet metadata parsing
+- Zero-copy binary protocol parsing
+- Optimized Thrift deserialization
+- No Python object overhead during parsing
 
 ## 🛠️ Development
 
@@ -251,20 +261,23 @@ make compile
 make test
 ```
 
-## 📊 Supported Formats
+## 📊 What Rugo Does
 
-Currently supported:
-- ✅ **Parquet metadata** - Full metadata extraction with statistics
+**✅ Currently Supported:**
+- **Fast Parquet metadata extraction** - Schema, statistics, row group information
+- **Logical type detection** - STRING, TIMESTAMP, DECIMAL, etc.
+- **Bloom filter testing** - Value presence checks without data scanning
+- **Statistics decoding** - Min/max values properly typed and decoded
+- **Cross-platform support** - Linux, macOS, Windows
 
-Planned:
-- 🔄 **Additional Parquet features** - Data reading, schema evolution
-- 🔄 **Other formats** - ORC, Avro metadata extraction
+**🎯 Focus Areas:**
+Rugo is laser-focused on being the fastest Parquet metadata reader available. It doesn't try to be everything to everyone - it does one thing exceptionally well.
 
 ## 🐛 Known Limitations
 
-- Currently read-only for Parquet metadata
-- Requires C++ compiler for installation
-- Limited to metadata extraction (no data reading yet)
+- **Metadata-only**: Rugo focuses on metadata extraction, not data reading
+- **C++ compiler required**: Building from source requires C++17 compiler
+- **Parquet-specific**: Designed specifically for Parquet format
 
 ## 📄 License
 
@@ -276,18 +289,22 @@ Licensed under the Apache License 2.0. See [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
-- Built on top of Apache Parquet format specification
-- Inspired by PyArrow's parquet module
-- Uses Thrift binary protocol for metadata parsing
+- Built on top of the Apache Parquet format specification
+- Inspired by PyArrow's parquet module design
+- Uses optimized Thrift binary protocol for metadata parsing
+- Performance insights from the Apache Arrow community
 
 ## 📈 Roadmap
 
-- [ ] Data reading capabilities
-- [ ] Schema evolution support  
-- [ ] Additional file format support (ORC, Avro)
-- [ ] Async I/O support
-- [ ] Memory-mapped file access
-- [ ] Compression algorithm support
+**Core Focus: Fastest Parquet Metadata Reader**
+- [x] Lightning-fast metadata extraction
+- [x] Complete schema information with logical types  
+- [x] Bloom filter support
+- [ ] Column-level metadata caching
+- [ ] Advanced statistics (histograms, sketches)
+- [ ] Memory-mapped file access for even faster parsing
+- [ ] Schema evolution detection
+- [ ] Parquet format validation
 
 ---
 

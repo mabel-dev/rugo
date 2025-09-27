@@ -1,7 +1,8 @@
 """
-rugo - File Decoders Library
+rugo - Fast Parquet File Reader
 
-A high-performance Cython-based library for decoding various file formats.
+A lightning-fast Parquet metadata reader built with C++ and Cython.
+Optimized for ultra-fast metadata extraction and analysis.
 """
 
 __version__ = "0.1.0"
