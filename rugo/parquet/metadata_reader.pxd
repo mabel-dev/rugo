@@ -7,6 +7,7 @@ cdef extern from "metadata.hpp":
     cdef cppclass ColumnStats:
         string name
         string physical_type
+        string logical_type
         string min
         string max
         long long null_count
@@ -23,3 +24,4 @@ cdef extern from "metadata.hpp":
         vector[RowGroupStats] row_groups
 
     FileStats ReadParquetMetadata(const string& path)
+    bint TestBloomFilter(const string& file_path, long long bloom_offset, long long bloom_length, const string& value)

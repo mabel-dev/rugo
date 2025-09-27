@@ -59,9 +59,11 @@ def read_metadata(str path):
             "columns": []
         }
         for col in rg.columns:
+            logical_type_str = col.logical_type.decode("utf-8") if col.logical_type.size() > 0 else ""
             rg_dict["columns"].append({
                 "name": col.name.decode("utf-8"),
                 "type": col.physical_type.decode("utf-8"),
+                "logical_type": logical_type_str,
                 "min": decode_value(col.physical_type, col.min),
                 "max": decode_value(col.physical_type, col.max),
                 "null_count": col.null_count,
@@ -70,3 +72,26 @@ def read_metadata(str path):
             })
         result["row_groups"].append(rg_dict)
     return result
+
+
+def test_bloom_filter(str file_path, long long bloom_offset, long long bloom_length, str value):
+    """Test if a value might be present in a bloom filter.
+    
+    Args:
+        file_path: Path to the Parquet file
+        bloom_offset: Offset of the bloom filter in the file
+        bloom_length: Length of the bloom filter data
+        value: Value to test for
+        
+    Returns:
+        True if the value might be present (no false negatives),
+        False if the value is definitely not present
+    """
+    if bloom_offset < 0 or bloom_length <= 0:
+        return False
+    return metadata_reader.TestBloomFilter(
+        file_path.encode("utf-8"), 
+        bloom_offset, 
+        bloom_length, 
+        value.encode("utf-8")
+    )
