@@ -1,4 +1,5 @@
 # distutils: language = c++
+# distutils: extra_compile_args = -Wno-unreachable-code-fallthrough
 
 from libcpp.string cimport string
 
