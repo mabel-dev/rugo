@@ -2,6 +2,7 @@
 # distutils: extra_compile_args = -Wno-unreachable-code-fallthrough
 
 from libcpp.string cimport string
+from libc.stdint cimport uint8_t
 
 import datetime
 import struct
@@ -47,8 +48,32 @@ cdef object decode_value(string physical_type, string raw):
 
 
 def read_metadata(str path):
+    """Read parquet metadata from a file path (delegates to buffer version)."""
+    with open(path, "rb") as f:
+        data = f.read()
+    return read_metadata_from_bytes(data)
+
+def read_metadata_from_bytes(bytes data):
+    """Read parquet metadata from an in-memory bytes object."""
+    cdef const uint8_t* buf = <const uint8_t*> data
+    cdef size_t size = len(data)
+    return _read_metadata_common(buf, size)
+
+def read_metadata_from_memoryview(memoryview mv):
+    """Read parquet metadata from a Python memoryview (zero-copy)."""
+    if not mv.contiguous:
+        raise ValueError("Memoryview must be contiguous")
+
+    cdef memoryview[uint8_t] mv_bytes = mv.cast('B')  # keep reference alive
+    cdef const uint8_t* buf = &mv_bytes[0]
+    cdef size_t size = mv_bytes.nbytes
+
+    return _read_metadata_common(buf, size)
+
+cdef object _read_metadata_common(const uint8_t* buf, size_t size):
     cdef metadata_reader.FileStats fs
-    fs = metadata_reader.ReadParquetMetadata(path.encode("utf-8"))
+    fs = metadata_reader.ReadParquetMetadataFromBuffer(buf, size)
+
     result = {
         "num_rows": fs.num_rows,
         "row_groups": []
@@ -76,47 +101,3 @@ def read_metadata(str path):
             })
         result["row_groups"].append(rg_dict)
     return result
-
-
-def test_bloom_filter(
-        str file_path,
-        long long bloom_offset,
-        long long bloom_length,
-        str value):
-
-    """Test if a value might be present in a bloom filter.
-
-    Args:
-        file_path: Path to the Parquet file
-        bloom_offset: Offset of the bloom filter in the file
-        bloom_length: Length of the bloom filter data (can be -1 if unknown)
-        value: Value to test for
-
-    Returns:
-        True if the value might be present (no false negatives),
-        False if the value is definitely not present
-
-    Note:
-        This is a simplified bloom filter implementation. The actual Parquet
-        bloom filter format can be complex and this may not work with all files.
-    """
-    if bloom_offset < 0:
-        return False
-    return metadata_reader.TestBloomFilter(
-        file_path.encode("utf-8"),
-        bloom_offset,
-        bloom_length,
-        value.encode("utf-8")
-    )
-
-
-def has_bloom_filter(dict column):
-    """Check if a column has bloom filter information.
-
-    Args:
-        column: A column dictionary from read_metadata()
-
-    Returns:
-        True if the column has bloom filter, False otherwise
-    """
-    return column.get('bloom_offset', -1) >= 0

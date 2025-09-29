@@ -30,7 +30,7 @@ static inline const char* ParquetTypeToString(int t) {
 
 static inline const char* LogicalTypeToString(int t) {
     switch (t) {
-        case 0: return "UTF8";        // Actually the most common one!
+        case 0: return "UTF8";
         case 1: return "MAP";
         case 2: return "LIST";
         case 3: return "ENUM";
@@ -55,12 +55,27 @@ static inline const char* LogicalTypeToString(int t) {
     }
 }
 
+static inline std::string CanonicalizeColumnName(std::string name) {
+    if (name.rfind("schema.", 0) == 0) {
+        name.erase(0, 7); // strip schema.
+    }
+    if (name.size() >= 13 && name.compare(name.size()-13, 13, ".list.element") == 0) {
+        name.erase(name.size()-13);
+    } else if (name.size() >= 10 && name.compare(name.size()-10, 10, ".list.item") == 0) {
+        name.erase(name.size()-10);
+    }
+    return name;
+}
+
 // ------------------- Schema parsing -------------------
 
 struct SchemaElement {
     std::string name;
     std::string logical_type;
     int num_children = 0;
+    int32_t type_length = 0;   // for FIXED_LEN_BYTE_ARRAY (e.g. flba5)
+    int32_t scale = 0;         // for DECIMAL
+    int32_t precision = 0;     // for DECIMAL
 };
 
 // Correct logical type structure parsing
@@ -103,7 +118,7 @@ static std::string ParseLogicalType(TInput& in) {
                     else if (inner.id == 2) precision = ReadI32(in);
                     else SkipField(in, inner.type);
                 }
-                result = "decimal (" + std::to_string(precision) + "," + std::to_string(scale) + ")";
+                result = "decimal(" + std::to_string(precision) + "," + std::to_string(scale) + ")";
                 break;
             }
             case 6: { // DATE (DateType - empty struct)
@@ -141,7 +156,7 @@ static std::string ParseLogicalType(TInput& in) {
                         SkipField(in, inner.type);
                     }
                 }
-                result = "time [" + unit + (isAdjustedToUTC ? ",UTC" : "") + "]";
+                result = "time[" + unit + (isAdjustedToUTC ? ",UTC" : "") + "]";
                 SkipStruct(in);
                 break;
             }
@@ -175,7 +190,7 @@ static std::string ParseLogicalType(TInput& in) {
                         SkipField(in, inner.type);
                     }
                 }
-                result = "timestamp [" + unit + (isAdjustedToUTC ? ",UTC" : "") + "]";
+                result = "timestamp[" + unit + (isAdjustedToUTC ? ",UTC" : "") + "]";
                 SkipStruct(in);
                 break;
             }
@@ -222,7 +237,13 @@ static std::string ParseLogicalType(TInput& in) {
                 result = "bson";
                 break;
             }
+            case 15: { // FLOAT16 (Float16Type - empty struct)
+                SkipStruct(in);  // it’s defined as an empty struct
+                result = "float16";
+                break;
+            }
             default:
+                std::cerr << "Skipping unknown logical type id " << fh.id << " type " << (int)fh.type << "\n";   
                 SkipField(in, fh.type);
                 break;
         }
@@ -247,7 +268,7 @@ static SchemaElement ParseSchemaElement(TInput& in) {
             }
             case 2: { // type_length (for FIXED_LEN_BYTE_ARRAY)
                 int32_t len = ReadI32(in);
-                (void)len;
+                elem.type_length = len;
                 break;
             }
             case 3: { // repetition_type
@@ -263,7 +284,7 @@ static SchemaElement ParseSchemaElement(TInput& in) {
                 elem.num_children = ReadI32(in);
                 break;
             }
-            case 6: {
+            case 6: { // converted_type (legacy logical type)
                 int32_t ct = ReadI32(in);
                 if (elem.logical_type.empty()) {
                     elem.logical_type = LogicalTypeToString(ct);
@@ -272,12 +293,12 @@ static SchemaElement ParseSchemaElement(TInput& in) {
             }
             case 7: { // scale (for DECIMAL)
                 int32_t scale = ReadI32(in);
-                (void)scale;
+                elem.scale = scale;
                 break;
             }
             case 8: { // precision (for DECIMAL)
                 int32_t precision = ReadI32(in);
-                (void)precision;
+                elem.precision = precision;
                 break;
             }
             case 9: { // field_id
@@ -357,15 +378,17 @@ static void ParseColumnMeta(TInput& in, ColumnStats& cs) {
             case 2: { auto lh = ReadListHeader(in);
                       for (uint32_t i = 0; i < lh.size; i++) ReadVarint(in);
                       break; }
-            case 3: { auto lh = ReadListHeader(in);
-                      std::string name;
-                      for (uint32_t i = 0; i < lh.size; i++) {
-                          std::string part = ReadString(in);
-                          if (!name.empty()) name.push_back('.');
-                          name += part;
-                      }
-                      cs.name = std::move(name);
-                      break; }
+            case 3: {
+                auto lh = ReadListHeader(in);
+                std::string name;
+                for (uint32_t i = 0; i < lh.size; i++) {
+                    std::string part = ReadString(in);
+                    if (!name.empty()) name.push_back('.');
+                    name += part;
+                }
+                cs.name = CanonicalizeColumnName(std::move(name));
+                break;
+            }
             case 4: { (void)ReadI32(in); break; }            // codec (unused)
             case 5: { (void)ReadI64(in); break; }            // num_values
             case 6: { (void)ReadI64(in); break; }            // total_uncompressed_size
@@ -441,6 +464,11 @@ static void ParseRowGroup(TInput& in, RowGroupStats& rg) {
 
 // ------------------- Schema Walker -------------------
 
+static inline bool EndsWith(const std::string& s, const char* suf) {
+    const size_t n = std::strlen(suf);
+    return s.size() >= n && std::memcmp(s.data() + s.size() - n, suf, n) == 0;
+}
+
 // Walk schema tree recursively
 static void WalkSchema(TInput& in, int remaining,
                        int indent,
@@ -449,14 +477,42 @@ static void WalkSchema(TInput& in, int remaining,
     for (int i = 0; i < remaining; i++) {
         SchemaElement elem = ParseSchemaElement(in);
 
-        // build the current path
-        std::string path = parent_path.empty() ? elem.name : parent_path + "." + elem.name;
+        const std::string path = parent_path.empty() ? elem.name : parent_path + "." + elem.name;
 
-        // record logical type if present
+        // Collapse Parquet LIST encodings by name (no physical type required).
+        // Handle both canonical ".list.element" and legacy ".list.item".
+        if (EndsWith(path, ".list.element") || EndsWith(path, ".list.item")) {
+            const char* suffix = EndsWith(path, ".list.element") ? ".list.element" : ".list.item";
+            const std::size_t base_len = path.size() - std::strlen(suffix);
+            const std::string base = path.substr(0, base_len);
+
+            // Prefer the leaf's logical type (e.g., STRING). If absent, we can only mark unknown.
+            const std::string child_logical = !elem.logical_type.empty() ? elem.logical_type : "?>";
+
+            // Emit BOTH keys so exact-path lookups succeed.
+            logical_type_map[base] = "array<" + child_logical + ">";
+            logical_type_map[path] = "array<" + child_logical + ">";
+
+            continue;
+        }
+
+        // Special handling for DECIMAL and FIXED_LEN_BYTE_ARRAY to include parameters.
+        if (elem.logical_type == "DECIMAL") {
+            elem.logical_type = "decimal128(" + std::to_string(elem.precision) + "," +
+                                    std::to_string(elem.scale) + ")";
+        } else if (elem.logical_type.empty() &&
+                elem.type_length > 0) {
+            elem.logical_type = "fixed_len_byte_array[" + std::to_string(elem.type_length) + "]";
+        } else {
+            elem.logical_type = elem.logical_type;
+        }
+
+        // Normal emission for non-list nodes (only if a logical type is present).
         if (!elem.logical_type.empty()) {
             logical_type_map[path] = elem.logical_type;
         }
-        // recurse into children
+
+        // Recurse into children.
         if (elem.num_children > 0) {
             WalkSchema(in, elem.num_children, indent + 1, path, logical_type_map);
         }
@@ -496,10 +552,10 @@ static FileStats ParseFileMeta(TInput& in) {
                             col.logical_type = it->second;
                         } else {
                             // Infer common logical types from physical types when not explicitly defined
-                            if (col.physical_type == "BYTE_ARRAY") {
-                                col.logical_type = "STRING"; // Most BYTE_ARRAY are strings
-                            } else if (col.physical_type == "INT96") {
-                                col.logical_type = "TIMESTAMP_NANOS"; // INT96 is usually timestamp
+                            if (col.physical_type == "byte_array") {
+                                col.logical_type = "string"; // Most BYTE_ARRAY are strings
+                            } else if (col.physical_type == "int96") {
+                                col.logical_type = "timestamp[ns]"; // INT96 is usually timestamp
                             } else {
                                 col.logical_type = col.physical_type; // Fallback to physical type
                             }
@@ -520,26 +576,25 @@ static FileStats ParseFileMeta(TInput& in) {
 
 // ------------------- Entry point -------------------
 
-FileStats ReadParquetMetadata(const std::string& path) {
-    std::ifstream f(path, std::ios::binary | std::ios::ate);
-    if (!f.is_open()) throw std::runtime_error("Failed to open file");
+FileStats ReadParquetMetadataFromBuffer(const uint8_t* buf, size_t size) {
+    if (size < 8) {
+        throw std::runtime_error("Buffer too small");
+    }
 
-    size_t file_size = f.tellg();
-
-    f.seekg(file_size - 8);
-    uint8_t trailer[8];
-    f.read((char*)trailer, 8);
+    // trailer is always last 8 bytes
+    const uint8_t* trailer = buf + size - 8;
 
     if (memcmp(trailer + 4, "PAR1", 4) != 0)
         throw std::runtime_error("Not a parquet file");
 
     uint32_t footer_len = ReadLE32(trailer);
-    std::vector<uint8_t> footer(footer_len);
+    if (footer_len + 8 > size)
+        throw std::runtime_error("Footer length invalid");
 
-    f.seekg(file_size - 8 - footer_len);
-    f.read((char*)footer.data(), footer_len);
+    const uint8_t* footer_start = buf + size - 8 - footer_len;
+    const uint8_t* footer_end   = buf + size - 8;
 
-    TInput in{footer.data(), footer.data() + footer.size()};
+    TInput in{footer_start, footer_end};
     return ParseFileMeta(in);
 }
 

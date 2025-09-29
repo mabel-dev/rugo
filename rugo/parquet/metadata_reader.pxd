@@ -1,4 +1,5 @@
 # parquet_meta.pxd
+from libc.stdint cimport uint8_t
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 
@@ -23,5 +24,6 @@ cdef extern from "metadata.hpp":
         long long num_rows
         vector[RowGroupStats] row_groups
 
-    FileStats ReadParquetMetadata(const string& path)
+    FileStats ReadParquetMetadataC(const char* path)
+    FileStats ReadParquetMetadataFromBuffer(const uint8_t* buf, size_t size)
     bint TestBloomFilter(const string& file_path, long long bloom_offset, long long bloom_length, const string& value)
