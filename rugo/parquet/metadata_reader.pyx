@@ -18,18 +18,21 @@ cdef object decode_value(string physical_type, string raw):
     if len(b) == 0:
         return b""   # treat empty as empty, not None
 
+    # Decode the C++ string to Python string for comparison
+    cdef str type_str = physical_type.decode("utf-8")
+    
     try:
-        if physical_type == "INT32":
+        if type_str == "int32":
             return struct.unpack("<i", b)[0]
-        elif physical_type == "INT64":
+        elif type_str == "int64":
             return struct.unpack("<q", b)[0]
-        elif physical_type == "FLOAT":
+        elif type_str == "float32":
             return struct.unpack("<f", b)[0]
-        elif physical_type == "DOUBLE":
+        elif type_str == "float64":
             return struct.unpack("<d", b)[0]
-        elif physical_type in ("BYTE_ARRAY", "FIXED_LEN_BYTE_ARRAY"):
+        elif type_str in ("byte_array", "fixed_len_byte_array"):
             return b
-        elif physical_type == "INT96":
+        elif type_str == "int96":
             if len(b) == 12:
                 lo, hi = struct.unpack("<qI", b)
                 julian_day = hi
