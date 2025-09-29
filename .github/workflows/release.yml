@@ -14,8 +14,7 @@ on:
         default: false
         type: boolean
 
-env:
-  CYTHON_VERSION: "3.0.11"
+# No pinned Cython version - use flexible requirement from pyproject.toml
 
 jobs:
   build_wheels:
@@ -31,7 +30,7 @@ jobs:
         fetch-depth: 0
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
@@ -48,7 +47,7 @@ jobs:
         CIBW_SKIP: "*-win32 *-manylinux_i686 pp*"
         
         # Install build dependencies
-        CIBW_BEFORE_BUILD: "pip install Cython==${{ env.CYTHON_VERSION }} setuptools wheel"
+        CIBW_BEFORE_BUILD: "pip install Cython setuptools wheel"
         
         # Ensure C++ compiler is available on Linux
         CIBW_BEFORE_ALL_LINUX: "yum install -y gcc-c++ || apt-get update && apt-get install -y g++"
@@ -64,7 +63,7 @@ jobs:
         CIBW_ARCHS_MACOS: "x86_64 arm64"
         CIBW_ARCHS_WINDOWS: "AMD64"
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: wheels-${{ matrix.os }}
         path: ./wheelhouse/*.whl
@@ -78,19 +77,19 @@ jobs:
         fetch-depth: 0
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
     - name: Install build dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install build setuptools wheel Cython==${{ env.CYTHON_VERSION }}
+        pip install build setuptools wheel Cython
 
     - name: Build sdist
       run: python -m build --sdist
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: sdist
         path: dist/*.tar.gz
@@ -104,27 +103,27 @@ jobs:
       id-token: write
 
     steps:
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: wheels-ubuntu-latest
         path: dist
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: wheels-windows-latest
         path: dist
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: wheels-macos-13
         path: dist
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: wheels-macos-14
         path: dist
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: sdist
         path: dist
@@ -141,27 +140,27 @@ jobs:
       id-token: write
 
     steps:
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: wheels-ubuntu-latest
         path: dist
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: wheels-windows-latest
         path: dist
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: wheels-macos-13
         path: dist
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: wheels-macos-14
         path: dist
 
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: sdist
         path: dist
