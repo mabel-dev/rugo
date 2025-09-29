@@ -11,7 +11,8 @@ __author__ = "Mabel Dev"
 # Import converters for easy access
 try:
     from .converters import rugo_to_orso_schema
-    __all__ = ['rugo_to_orso_schema']
+
+    __all__ = ["rugo_to_orso_schema"]
 except ImportError:
     # orso may not be available
     __all__ = []

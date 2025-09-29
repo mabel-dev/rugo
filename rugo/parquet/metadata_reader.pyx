@@ -1,8 +1,8 @@
 # distutils: language = c++
 # distutils: extra_compile_args = -Wno-unreachable-code-fallthrough
 
-from libcpp.string cimport string
 from libc.stdint cimport uint8_t
+from libcpp.string cimport string
 
 import datetime
 import struct
@@ -20,7 +20,7 @@ cdef object decode_value(string physical_type, string raw):
 
     # Decode the C++ string to Python string for comparison
     cdef str type_str = physical_type.decode("utf-8")
-    
+
     try:
         if type_str == "int32":
             return struct.unpack("<i", b)[0]
@@ -56,11 +56,13 @@ def read_metadata(str path):
         data = f.read()
     return read_metadata_from_bytes(data)
 
+
 def read_metadata_from_bytes(bytes data):
     """Read parquet metadata from an in-memory bytes object."""
     cdef const uint8_t* buf = <const uint8_t*> data
     cdef size_t size = len(data)
     return _read_metadata_common(buf, size)
+
 
 def read_metadata_from_memoryview(memoryview mv):
     """Read parquet metadata from a Python memoryview (zero-copy)."""
@@ -72,6 +74,7 @@ def read_metadata_from_memoryview(memoryview mv):
     cdef size_t size = mv_bytes.nbytes
 
     return _read_metadata_common(buf, size)
+
 
 cdef object _read_metadata_common(const uint8_t* buf, size_t size):
     cdef metadata_reader.FileStats fs
