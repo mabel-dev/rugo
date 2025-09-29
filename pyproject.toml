@@ -40,6 +40,9 @@ test = [
     "pytest>=6.0.0",
     "pytest-cov",
 ]
+orso = [
+    "orso>=0.0.200",
+]
 
 [project.urls]
 Homepage = "https://github.com/mabel-dev/rugo"
@@ -47,7 +50,7 @@ Repository = "https://github.com/mabel-dev/rugo"
 Issues = "https://github.com/mabel-dev/rugo/issues"
 
 [tool.setuptools]
-packages = ["rugo", "rugo.decoders"]
+packages = ["rugo", "rugo.parquet", "rugo.converters"]
 
 [tool.setuptools.package-data]
 "*" = ["*.pyx", "*.pxd", "*.pxi"]
