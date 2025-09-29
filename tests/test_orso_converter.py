@@ -5,9 +5,9 @@ Tests for the rugo to orso schema converter.
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 import pytest
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import rugo.parquet as parquet_meta
 
@@ -16,8 +16,9 @@ try:
     from orso.schema import RelationSchema
     from orso.types import OrsoTypes
 
-    from rugo.converters.orso import (_map_parquet_type_to_orso,
-                                      extract_schema_only, rugo_to_orso_schema)
+    from rugo.converters.orso import _map_parquet_type_to_orso
+    from rugo.converters.orso import extract_schema_only
+    from rugo.converters.orso import rugo_to_orso_schema
     ORSO_AVAILABLE = True
 except ImportError:
     ORSO_AVAILABLE = False

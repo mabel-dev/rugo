@@ -2,9 +2,12 @@
 Convert rugo parquet metadata schemas to orso RelationSchema format.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
+from typing import Dict
+from typing import Optional
 
-from orso.schema import FlatColumn, RelationSchema
+from orso.schema import FlatColumn
+from orso.schema import RelationSchema
 from orso.types import OrsoTypes
 
 

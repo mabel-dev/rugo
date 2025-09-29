@@ -10,7 +10,6 @@ A lightning-fast Parquet file reader built with C++ and Cython, optimized for ul
 - **🚀 Lightning-fast metadata reading** - 10-50x faster than PyArrow for metadata operations
 - **🏗️ C++ core with Cython bindings** - Maximum performance with Python convenience
 - **📊 Complete schema information** - Physical types, logical types, and statistics
-- **🌸 Bloom filter support** - Test value presence without reading data
 - **🔄 Schema conversion** - Convert rugo schemas to orso format (optional)
 - **🔬 Zero dependencies** - No runtime dependencies for core functionality
 - **✅ PyArrow compatible** - Validated results, drop-in replacement for metadata operations
@@ -48,7 +47,7 @@ pip install -e .
 
 ### Requirements
 
-- Python 3.8+
+- Python 3.9+
 - C++ compiler with C++17 support
 - Cython (for building from source)
 
@@ -248,10 +247,10 @@ rugo/
 │       └── metadata_reader.pyx  # Cython bindings
 ├── tests/
 │   ├── data/                # Test Parquet files
-│   └── test_compare_arrow_rugo.py  # Validation tests
+│   └── tests
 ├── Makefile                 # Build automation
 ├── setup.py                 # Build configuration
-└── pyproject.toml          # Project metadata
+└── pyproject.toml           # Project metadata
 ```
 
 ### Testing
@@ -339,11 +338,8 @@ Licensed under the Apache License 2.0. See [LICENSE](LICENSE) for details.
 **Core Focus: Fastest Parquet Metadata Reader**
 - [x] Lightning-fast metadata extraction
 - [x] Complete schema information with logical types  
-- [x] Bloom filter support
-- [ ] Column-level metadata caching
+- [ ] Bloom filter support
 - [ ] Advanced statistics (histograms, sketches)
-- [ ] Memory-mapped file access for even faster parsing
-- [ ] Schema evolution detection
 - [ ] Parquet format validation
 
 ---

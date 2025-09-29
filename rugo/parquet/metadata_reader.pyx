@@ -1,13 +1,12 @@
 # distutils: language = c++
 # distutils: extra_compile_args = -Wno-unreachable-code-fallthrough
 
-from libc.stdint cimport uint8_t
-from libcpp.string cimport string
-
 import datetime
 import struct
 
-cimport metadata_reader
+import metadata_reader
+from libc.stdint cimport uint8_t
+from libcpp.string cimport string
 
 
 # --- value decoder ---

@@ -1,13 +1,12 @@
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 import datetime
 import glob
+import sys
 import time
+from pathlib import Path
 
 import pyarrow.parquet as pq
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import rugo.parquet as parquet_meta
 

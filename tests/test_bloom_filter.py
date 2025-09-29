@@ -10,8 +10,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import rugo.parquet as parquet_meta
 
+import rugo.parquet as parquet_meta
 
 def test_bloom_filters():
     """Test bloom filter functionality"""

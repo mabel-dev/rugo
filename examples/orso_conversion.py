@@ -18,7 +18,8 @@ import rugo.parquet as parquet_meta
 
 # Try to import orso converter (optional dependency)
 try:
-    from rugo.converters.orso import extract_schema_only, rugo_to_orso_schema
+    from rugo.converters.orso import extract_schema_only
+    from rugo.converters.orso import rugo_to_orso_schema
     ORSO_AVAILABLE = True
 except ImportError:
     print("⚠️  orso package not available. Install with: pip install rugo[orso]")
