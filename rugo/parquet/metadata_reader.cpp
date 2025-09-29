@@ -1155,6 +1155,7 @@ static CYTHON_INLINE float __PYX_NAN() {
 #define __PYX_HAVE__rugo__parquet
 #define __PYX_HAVE_API__rugo__parquet
 /* Early includes */
+#include <stdint.h>
 #include <string.h>
 #include <string_view>
 #include "ios"
@@ -1162,7 +1163,6 @@ static CYTHON_INLINE float __PYX_NAN() {
 #include "stdexcept"
 #include "typeinfo"
 #include <string>
-#include <stdint.h>
 #include <vector>
 #include "metadata.hpp"
 #ifdef _OPENMP
@@ -2529,13 +2529,13 @@ static int __Pyx_State_RemoveModule(void*);
 #define __PYX_TYPE_MODULE_PREFIX __PYX_ABI_MODULE_NAME "."
 
 
+/* Module declarations from "libc.stdint" */
+
 /* Module declarations from "libc.string" */
 
 /* Module declarations from "libcpp.string_view" */
 
 /* Module declarations from "libcpp.string" */
-
-/* Module declarations from "libc.stdint" */
 
 /* Module declarations from "libcpp.vector" */
 
@@ -4207,7 +4207,7 @@ static PyObject *__pyx_pf_4rugo_7parquet_read_metadata(CYTHON_UNUSED PyObject *_
  *         data = f.read()
  *     return read_metadata_from_bytes(data)             # <<<<<<<<<<<<<<
  * 
- * def read_metadata_from_bytes(bytes data):
+ * 
 */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = NULL;
@@ -4262,8 +4262,8 @@ static PyObject *__pyx_pf_4rugo_7parquet_read_metadata(CYTHON_UNUSED PyObject *_
   return __pyx_r;
 }
 
-/* "rugo/parquet/metadata_reader.pyx":59
- *     return read_metadata_from_bytes(data)
+/* "rugo/parquet/metadata_reader.pyx":60
+ * 
  * 
  * def read_metadata_from_bytes(bytes data):             # <<<<<<<<<<<<<<
  *     """Read parquet metadata from an in-memory bytes object."""
@@ -4310,32 +4310,32 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_data,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 59, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 60, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 59, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 60, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "read_metadata_from_bytes", 0) < 0) __PYX_ERR(0, 59, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "read_metadata_from_bytes", 0) < 0) __PYX_ERR(0, 60, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 1; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("read_metadata_from_bytes", 1, 1, 1, i); __PYX_ERR(0, 59, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("read_metadata_from_bytes", 1, 1, 1, i); __PYX_ERR(0, 60, __pyx_L3_error) }
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 59, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 60, __pyx_L3_error)
     }
     __pyx_v_data = ((PyObject*)values[0]);
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("read_metadata_from_bytes", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 59, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("read_metadata_from_bytes", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 60, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -4346,7 +4346,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_data), (&PyBytes_Type), 1, "data", 1))) __PYX_ERR(0, 59, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_data), (&PyBytes_Type), 1, "data", 1))) __PYX_ERR(0, 60, __pyx_L1_error)
   __pyx_r = __pyx_pf_4rugo_7parquet_2read_metadata_from_bytes(__pyx_self, __pyx_v_data);
 
   /* function exit code */
@@ -4379,7 +4379,7 @@ static PyObject *__pyx_pf_4rugo_7parquet_2read_metadata_from_bytes(CYTHON_UNUSED
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("read_metadata_from_bytes", 0);
 
-  /* "rugo/parquet/metadata_reader.pyx":61
+  /* "rugo/parquet/metadata_reader.pyx":62
  * def read_metadata_from_bytes(bytes data):
  *     """Read parquet metadata from an in-memory bytes object."""
  *     cdef const uint8_t* buf = <const uint8_t*> data             # <<<<<<<<<<<<<<
@@ -4388,12 +4388,12 @@ static PyObject *__pyx_pf_4rugo_7parquet_2read_metadata_from_bytes(CYTHON_UNUSED
 */
   if (unlikely(__pyx_v_data == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "expected bytes, NoneType found");
-    __PYX_ERR(0, 61, __pyx_L1_error)
+    __PYX_ERR(0, 62, __pyx_L1_error)
   }
-  __pyx_t_1 = __Pyx_PyBytes_AsUString(__pyx_v_data); if (unlikely((!__pyx_t_1) && PyErr_Occurred())) __PYX_ERR(0, 61, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyBytes_AsUString(__pyx_v_data); if (unlikely((!__pyx_t_1) && PyErr_Occurred())) __PYX_ERR(0, 62, __pyx_L1_error)
   __pyx_v_buf = ((uint8_t const *)__pyx_t_1);
 
-  /* "rugo/parquet/metadata_reader.pyx":62
+  /* "rugo/parquet/metadata_reader.pyx":63
  *     """Read parquet metadata from an in-memory bytes object."""
  *     cdef const uint8_t* buf = <const uint8_t*> data
  *     cdef size_t size = len(data)             # <<<<<<<<<<<<<<
@@ -4402,27 +4402,27 @@ static PyObject *__pyx_pf_4rugo_7parquet_2read_metadata_from_bytes(CYTHON_UNUSED
 */
   if (unlikely(__pyx_v_data == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "object of type 'NoneType' has no len()");
-    __PYX_ERR(0, 62, __pyx_L1_error)
+    __PYX_ERR(0, 63, __pyx_L1_error)
   }
-  __pyx_t_2 = __Pyx_PyBytes_GET_SIZE(__pyx_v_data); if (unlikely(__pyx_t_2 == ((Py_ssize_t)-1))) __PYX_ERR(0, 62, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyBytes_GET_SIZE(__pyx_v_data); if (unlikely(__pyx_t_2 == ((Py_ssize_t)-1))) __PYX_ERR(0, 63, __pyx_L1_error)
   __pyx_v_size = __pyx_t_2;
 
-  /* "rugo/parquet/metadata_reader.pyx":63
+  /* "rugo/parquet/metadata_reader.pyx":64
  *     cdef const uint8_t* buf = <const uint8_t*> data
  *     cdef size_t size = len(data)
  *     return _read_metadata_common(buf, size)             # <<<<<<<<<<<<<<
  * 
- * def read_metadata_from_memoryview(memoryview mv):
+ * 
 */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_3 = __pyx_f_4rugo_7parquet__read_metadata_common(__pyx_v_buf, __pyx_v_size); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 63, __pyx_L1_error)
+  __pyx_t_3 = __pyx_f_4rugo_7parquet__read_metadata_common(__pyx_v_buf, __pyx_v_size); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 64, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_r = __pyx_t_3;
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "rugo/parquet/metadata_reader.pyx":59
- *     return read_metadata_from_bytes(data)
+  /* "rugo/parquet/metadata_reader.pyx":60
+ * 
  * 
  * def read_metadata_from_bytes(bytes data):             # <<<<<<<<<<<<<<
  *     """Read parquet metadata from an in-memory bytes object."""
@@ -4440,8 +4440,8 @@ static PyObject *__pyx_pf_4rugo_7parquet_2read_metadata_from_bytes(CYTHON_UNUSED
   return __pyx_r;
 }
 
-/* "rugo/parquet/metadata_reader.pyx":65
- *     return _read_metadata_common(buf, size)
+/* "rugo/parquet/metadata_reader.pyx":67
+ * 
  * 
  * def read_metadata_from_memoryview(memoryview mv):             # <<<<<<<<<<<<<<
  *     """Read parquet metadata from a Python memoryview (zero-copy)."""
@@ -4488,32 +4488,32 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_mv,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 65, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 67, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 65, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 67, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "read_metadata_from_memoryview", 0) < 0) __PYX_ERR(0, 65, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "read_metadata_from_memoryview", 0) < 0) __PYX_ERR(0, 67, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 1; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("read_metadata_from_memoryview", 1, 1, 1, i); __PYX_ERR(0, 65, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("read_metadata_from_memoryview", 1, 1, 1, i); __PYX_ERR(0, 67, __pyx_L3_error) }
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 65, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 67, __pyx_L3_error)
     }
     __pyx_v_mv = ((PyObject*)values[0]);
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("read_metadata_from_memoryview", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 65, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("read_metadata_from_memoryview", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 67, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -4524,7 +4524,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_mv), (&PyMemoryView_Type), 1, "mv", 1))) __PYX_ERR(0, 65, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_mv), (&PyMemoryView_Type), 1, "mv", 1))) __PYX_ERR(0, 67, __pyx_L1_error)
   __pyx_r = __pyx_pf_4rugo_7parquet_4read_metadata_from_memoryview(__pyx_self, __pyx_v_mv);
 
   /* function exit code */
@@ -4568,21 +4568,21 @@ static PyObject *__pyx_pf_4rugo_7parquet_4read_metadata_from_memoryview(CYTHON_U
   __pyx_pybuffernd_mv_bytes.data = NULL;
   __pyx_pybuffernd_mv_bytes.rcbuffer = &__pyx_pybuffer_mv_bytes;
 
-  /* "rugo/parquet/metadata_reader.pyx":67
+  /* "rugo/parquet/metadata_reader.pyx":69
  * def read_metadata_from_memoryview(memoryview mv):
  *     """Read parquet metadata from a Python memoryview (zero-copy)."""
  *     if not mv.contiguous:             # <<<<<<<<<<<<<<
  *         raise ValueError("Memoryview must be contiguous")
  * 
 */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_mv, __pyx_mstate_global->__pyx_n_u_contiguous); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 67, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_mv, __pyx_mstate_global->__pyx_n_u_contiguous); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 69, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 67, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely((__pyx_t_2 < 0))) __PYX_ERR(0, 69, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_3 = (!__pyx_t_2);
   if (unlikely(__pyx_t_3)) {
 
-    /* "rugo/parquet/metadata_reader.pyx":68
+    /* "rugo/parquet/metadata_reader.pyx":70
  *     """Read parquet metadata from a Python memoryview (zero-copy)."""
  *     if not mv.contiguous:
  *         raise ValueError("Memoryview must be contiguous")             # <<<<<<<<<<<<<<
@@ -4598,14 +4598,14 @@ static PyObject *__pyx_pf_4rugo_7parquet_4read_metadata_from_memoryview(CYTHON_U
       __pyx_t_1 = __Pyx_PyObject_FastCall(__pyx_t_5, __pyx_callargs+__pyx_t_6, (2-__pyx_t_6) | (__pyx_t_6*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 68, __pyx_L1_error)
+      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 70, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
     }
     __Pyx_Raise(__pyx_t_1, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __PYX_ERR(0, 68, __pyx_L1_error)
+    __PYX_ERR(0, 70, __pyx_L1_error)
 
-    /* "rugo/parquet/metadata_reader.pyx":67
+    /* "rugo/parquet/metadata_reader.pyx":69
  * def read_metadata_from_memoryview(memoryview mv):
  *     """Read parquet metadata from a Python memoryview (zero-copy)."""
  *     if not mv.contiguous:             # <<<<<<<<<<<<<<
@@ -4614,27 +4614,27 @@ static PyObject *__pyx_pf_4rugo_7parquet_4read_metadata_from_memoryview(CYTHON_U
 */
   }
 
-  /* "rugo/parquet/metadata_reader.pyx":70
+  /* "rugo/parquet/metadata_reader.pyx":72
  *         raise ValueError("Memoryview must be contiguous")
  * 
  *     cdef memoryview[uint8_t] mv_bytes = mv.cast('B')  # keep reference alive             # <<<<<<<<<<<<<<
  *     cdef const uint8_t* buf = &mv_bytes[0]
  *     cdef size_t size = mv_bytes.nbytes
 */
-  __pyx_t_1 = __Pyx_CallUnboundCMethod1(&__pyx_mstate_global->__pyx_umethod_PyMemoryView_Type__cast, __pyx_v_mv, __pyx_mstate_global->__pyx_n_u_B); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 70, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_CallUnboundCMethod1(&__pyx_mstate_global->__pyx_umethod_PyMemoryView_Type__cast, __pyx_v_mv, __pyx_mstate_global->__pyx_n_u_B); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 72, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
     if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_mv_bytes.rcbuffer->pybuffer, (PyObject*)((PyObject *)__pyx_t_1), &__Pyx_TypeInfo_nn_uint8_t, PyBUF_FORMAT| PyBUF_INDIRECT, 1, 0, __pyx_stack) == -1)) {
       __pyx_v_mv_bytes = ((PyObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_mv_bytes.rcbuffer->pybuffer.buf = NULL;
-      __PYX_ERR(0, 70, __pyx_L1_error)
+      __PYX_ERR(0, 72, __pyx_L1_error)
     } else {__pyx_pybuffernd_mv_bytes.diminfo[0].strides = __pyx_pybuffernd_mv_bytes.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_mv_bytes.diminfo[0].shape = __pyx_pybuffernd_mv_bytes.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_mv_bytes.diminfo[0].suboffsets = __pyx_pybuffernd_mv_bytes.rcbuffer->pybuffer.suboffsets[0];
     }
   }
   __pyx_v_mv_bytes = ((PyObject *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "rugo/parquet/metadata_reader.pyx":71
+  /* "rugo/parquet/metadata_reader.pyx":73
  * 
  *     cdef memoryview[uint8_t] mv_bytes = mv.cast('B')  # keep reference alive
  *     cdef const uint8_t* buf = &mv_bytes[0]             # <<<<<<<<<<<<<<
@@ -4644,35 +4644,35 @@ static PyObject *__pyx_pf_4rugo_7parquet_4read_metadata_from_memoryview(CYTHON_U
   __pyx_t_7 = 0;
   __pyx_v_buf = (&(*__Pyx_BufPtrFull1d(uint8_t *, __pyx_pybuffernd_mv_bytes.rcbuffer->pybuffer.buf, __pyx_t_7, __pyx_pybuffernd_mv_bytes.diminfo[0].strides, __pyx_pybuffernd_mv_bytes.diminfo[0].suboffsets)));
 
-  /* "rugo/parquet/metadata_reader.pyx":72
+  /* "rugo/parquet/metadata_reader.pyx":74
  *     cdef memoryview[uint8_t] mv_bytes = mv.cast('B')  # keep reference alive
  *     cdef const uint8_t* buf = &mv_bytes[0]
  *     cdef size_t size = mv_bytes.nbytes             # <<<<<<<<<<<<<<
  * 
  *     return _read_metadata_common(buf, size)
 */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_mv_bytes, __pyx_mstate_global->__pyx_n_u_nbytes); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 72, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_mv_bytes, __pyx_mstate_global->__pyx_n_u_nbytes); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 74, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_6 = __Pyx_PyLong_As_size_t(__pyx_t_1); if (unlikely((__pyx_t_6 == (size_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 72, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyLong_As_size_t(__pyx_t_1); if (unlikely((__pyx_t_6 == (size_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 74, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_size = __pyx_t_6;
 
-  /* "rugo/parquet/metadata_reader.pyx":74
+  /* "rugo/parquet/metadata_reader.pyx":76
  *     cdef size_t size = mv_bytes.nbytes
  * 
  *     return _read_metadata_common(buf, size)             # <<<<<<<<<<<<<<
  * 
- * cdef object _read_metadata_common(const uint8_t* buf, size_t size):
+ * 
 */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_4rugo_7parquet__read_metadata_common(__pyx_v_buf, __pyx_v_size); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 74, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_4rugo_7parquet__read_metadata_common(__pyx_v_buf, __pyx_v_size); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 76, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "rugo/parquet/metadata_reader.pyx":65
- *     return _read_metadata_common(buf, size)
+  /* "rugo/parquet/metadata_reader.pyx":67
+ * 
  * 
  * def read_metadata_from_memoryview(memoryview mv):             # <<<<<<<<<<<<<<
  *     """Read parquet metadata from a Python memoryview (zero-copy)."""
@@ -4702,8 +4702,8 @@ static PyObject *__pyx_pf_4rugo_7parquet_4read_metadata_from_memoryview(CYTHON_U
   return __pyx_r;
 }
 
-/* "rugo/parquet/metadata_reader.pyx":76
- *     return _read_metadata_common(buf, size)
+/* "rugo/parquet/metadata_reader.pyx":79
+ * 
  * 
  * cdef object _read_metadata_common(const uint8_t* buf, size_t size):             # <<<<<<<<<<<<<<
  *     cdef metadata_reader.FileStats fs
@@ -4733,7 +4733,7 @@ static PyObject *__pyx_f_4rugo_7parquet__read_metadata_common(uint8_t const *__p
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_read_metadata_common", 0);
 
-  /* "rugo/parquet/metadata_reader.pyx":78
+  /* "rugo/parquet/metadata_reader.pyx":81
  * cdef object _read_metadata_common(const uint8_t* buf, size_t size):
  *     cdef metadata_reader.FileStats fs
  *     fs = metadata_reader.ReadParquetMetadataFromBuffer(buf, size)             # <<<<<<<<<<<<<<
@@ -4742,35 +4742,35 @@ static PyObject *__pyx_f_4rugo_7parquet__read_metadata_common(uint8_t const *__p
 */
   __pyx_v_fs = ReadParquetMetadataFromBuffer(__pyx_v_buf, __pyx_v_size);
 
-  /* "rugo/parquet/metadata_reader.pyx":81
+  /* "rugo/parquet/metadata_reader.pyx":84
  * 
  *     result = {
  *         "num_rows": fs.num_rows,             # <<<<<<<<<<<<<<
  *         "row_groups": []
  *     }
 */
-  __pyx_t_1 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 81, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 84, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_fs.num_rows); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 81, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_fs.num_rows); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 84, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_num_rows, __pyx_t_2) < 0) __PYX_ERR(0, 81, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_num_rows, __pyx_t_2) < 0) __PYX_ERR(0, 84, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "rugo/parquet/metadata_reader.pyx":82
+  /* "rugo/parquet/metadata_reader.pyx":85
  *     result = {
  *         "num_rows": fs.num_rows,
  *         "row_groups": []             # <<<<<<<<<<<<<<
  *     }
  *     for rg in fs.row_groups:
 */
-  __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 82, __pyx_L1_error)
+  __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 85, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_row_groups, __pyx_t_2) < 0) __PYX_ERR(0, 81, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_row_groups, __pyx_t_2) < 0) __PYX_ERR(0, 84, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_v_result = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "rugo/parquet/metadata_reader.pyx":84
+  /* "rugo/parquet/metadata_reader.pyx":87
  *         "row_groups": []
  *     }
  *     for rg in fs.row_groups:             # <<<<<<<<<<<<<<
@@ -4782,47 +4782,47 @@ static PyObject *__pyx_f_4rugo_7parquet__read_metadata_common(uint8_t const *__p
     __pyx_t_4 = *__pyx_t_3;
     __pyx_v_rg = __PYX_STD_MOVE_IF_SUPPORTED(__pyx_t_4);
 
-    /* "rugo/parquet/metadata_reader.pyx":86
+    /* "rugo/parquet/metadata_reader.pyx":89
  *     for rg in fs.row_groups:
  *         rg_dict = {
  *             "num_rows": rg.num_rows,             # <<<<<<<<<<<<<<
  *             "total_byte_size": rg.total_byte_size,
  *             "columns": []
 */
-    __pyx_t_1 = __Pyx_PyDict_NewPresized(3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 86, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyDict_NewPresized(3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 89, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_2 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_rg.num_rows); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 86, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_rg.num_rows); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 89, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_num_rows, __pyx_t_2) < 0) __PYX_ERR(0, 86, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_num_rows, __pyx_t_2) < 0) __PYX_ERR(0, 89, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "rugo/parquet/metadata_reader.pyx":87
+    /* "rugo/parquet/metadata_reader.pyx":90
  *         rg_dict = {
  *             "num_rows": rg.num_rows,
  *             "total_byte_size": rg.total_byte_size,             # <<<<<<<<<<<<<<
  *             "columns": []
  *         }
 */
-    __pyx_t_2 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_rg.total_byte_size); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 87, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_rg.total_byte_size); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 90, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_total_byte_size, __pyx_t_2) < 0) __PYX_ERR(0, 86, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_total_byte_size, __pyx_t_2) < 0) __PYX_ERR(0, 89, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "rugo/parquet/metadata_reader.pyx":88
+    /* "rugo/parquet/metadata_reader.pyx":91
  *             "num_rows": rg.num_rows,
  *             "total_byte_size": rg.total_byte_size,
  *             "columns": []             # <<<<<<<<<<<<<<
  *         }
  *         for col in rg.columns:
 */
-    __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 88, __pyx_L1_error)
+    __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 91, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_columns, __pyx_t_2) < 0) __PYX_ERR(0, 86, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_columns, __pyx_t_2) < 0) __PYX_ERR(0, 89, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_XDECREF_SET(__pyx_v_rg_dict, ((PyObject*)__pyx_t_1));
     __pyx_t_1 = 0;
 
-    /* "rugo/parquet/metadata_reader.pyx":90
+    /* "rugo/parquet/metadata_reader.pyx":93
  *             "columns": []
  *         }
  *         for col in rg.columns:             # <<<<<<<<<<<<<<
@@ -4834,7 +4834,7 @@ static PyObject *__pyx_f_4rugo_7parquet__read_metadata_common(uint8_t const *__p
       __pyx_t_6 = *__pyx_t_5;
       __pyx_v_col = __PYX_STD_MOVE_IF_SUPPORTED(__pyx_t_6);
 
-      /* "rugo/parquet/metadata_reader.pyx":91
+      /* "rugo/parquet/metadata_reader.pyx":94
  *         }
  *         for col in rg.columns:
  *             if col.logical_type.size() > 0:             # <<<<<<<<<<<<<<
@@ -4844,19 +4844,19 @@ static PyObject *__pyx_f_4rugo_7parquet__read_metadata_common(uint8_t const *__p
       __pyx_t_7 = (__pyx_v_col.logical_type.size() > 0);
       if (__pyx_t_7) {
 
-        /* "rugo/parquet/metadata_reader.pyx":92
+        /* "rugo/parquet/metadata_reader.pyx":95
  *         for col in rg.columns:
  *             if col.logical_type.size() > 0:
  *                 logical_type_str = col.logical_type.decode("utf-8")             # <<<<<<<<<<<<<<
  *             else:
  *                 logical_type_str = ""
 */
-        __pyx_t_1 = __Pyx_decode_cpp_string(__pyx_v_col.logical_type, 0, PY_SSIZE_T_MAX, NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 92, __pyx_L1_error)
+        __pyx_t_1 = __Pyx_decode_cpp_string(__pyx_v_col.logical_type, 0, PY_SSIZE_T_MAX, NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 95, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_XDECREF_SET(__pyx_v_logical_type_str, __pyx_t_1);
         __pyx_t_1 = 0;
 
-        /* "rugo/parquet/metadata_reader.pyx":91
+        /* "rugo/parquet/metadata_reader.pyx":94
  *         }
  *         for col in rg.columns:
  *             if col.logical_type.size() > 0:             # <<<<<<<<<<<<<<
@@ -4866,7 +4866,7 @@ static PyObject *__pyx_f_4rugo_7parquet__read_metadata_common(uint8_t const *__p
         goto __pyx_L7;
       }
 
-      /* "rugo/parquet/metadata_reader.pyx":94
+      /* "rugo/parquet/metadata_reader.pyx":97
  *                 logical_type_str = col.logical_type.decode("utf-8")
  *             else:
  *                 logical_type_str = ""             # <<<<<<<<<<<<<<
@@ -4879,123 +4879,123 @@ static PyObject *__pyx_f_4rugo_7parquet__read_metadata_common(uint8_t const *__p
       }
       __pyx_L7:;
 
-      /* "rugo/parquet/metadata_reader.pyx":95
+      /* "rugo/parquet/metadata_reader.pyx":98
  *             else:
  *                 logical_type_str = ""
  *             rg_dict["columns"].append({             # <<<<<<<<<<<<<<
  *                 "name": col.name.decode("utf-8"),
  *                 "type": col.physical_type.decode("utf-8"),
 */
-      __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_rg_dict, __pyx_mstate_global->__pyx_n_u_columns); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 95, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_rg_dict, __pyx_mstate_global->__pyx_n_u_columns); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 98, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
 
-      /* "rugo/parquet/metadata_reader.pyx":96
+      /* "rugo/parquet/metadata_reader.pyx":99
  *                 logical_type_str = ""
  *             rg_dict["columns"].append({
  *                 "name": col.name.decode("utf-8"),             # <<<<<<<<<<<<<<
  *                 "type": col.physical_type.decode("utf-8"),
  *                 "logical_type": logical_type_str,
 */
-      __pyx_t_2 = __Pyx_PyDict_NewPresized(8); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 96, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyDict_NewPresized(8); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 99, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_8 = __Pyx_decode_cpp_string(__pyx_v_col.name, 0, PY_SSIZE_T_MAX, NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 96, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_decode_cpp_string(__pyx_v_col.name, 0, PY_SSIZE_T_MAX, NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 99, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
-      if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_name, __pyx_t_8) < 0) __PYX_ERR(0, 96, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_name, __pyx_t_8) < 0) __PYX_ERR(0, 99, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-      /* "rugo/parquet/metadata_reader.pyx":97
+      /* "rugo/parquet/metadata_reader.pyx":100
  *             rg_dict["columns"].append({
  *                 "name": col.name.decode("utf-8"),
  *                 "type": col.physical_type.decode("utf-8"),             # <<<<<<<<<<<<<<
  *                 "logical_type": logical_type_str,
  *                 "min": decode_value(col.physical_type, col.min),
 */
-      __pyx_t_8 = __Pyx_decode_cpp_string(__pyx_v_col.physical_type, 0, PY_SSIZE_T_MAX, NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 97, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_decode_cpp_string(__pyx_v_col.physical_type, 0, PY_SSIZE_T_MAX, NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 100, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
-      if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_type, __pyx_t_8) < 0) __PYX_ERR(0, 96, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_type, __pyx_t_8) < 0) __PYX_ERR(0, 99, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-      /* "rugo/parquet/metadata_reader.pyx":98
+      /* "rugo/parquet/metadata_reader.pyx":101
  *                 "name": col.name.decode("utf-8"),
  *                 "type": col.physical_type.decode("utf-8"),
  *                 "logical_type": logical_type_str,             # <<<<<<<<<<<<<<
  *                 "min": decode_value(col.physical_type, col.min),
  *                 "max": decode_value(col.physical_type, col.max),
 */
-      if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_logical_type, __pyx_v_logical_type_str) < 0) __PYX_ERR(0, 96, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_logical_type, __pyx_v_logical_type_str) < 0) __PYX_ERR(0, 99, __pyx_L1_error)
 
-      /* "rugo/parquet/metadata_reader.pyx":99
+      /* "rugo/parquet/metadata_reader.pyx":102
  *                 "type": col.physical_type.decode("utf-8"),
  *                 "logical_type": logical_type_str,
  *                 "min": decode_value(col.physical_type, col.min),             # <<<<<<<<<<<<<<
  *                 "max": decode_value(col.physical_type, col.max),
  *                 "null_count": col.null_count,
 */
-      __pyx_t_8 = __pyx_f_4rugo_7parquet_decode_value(__pyx_v_col.physical_type, __pyx_v_col.min); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 99, __pyx_L1_error)
+      __pyx_t_8 = __pyx_f_4rugo_7parquet_decode_value(__pyx_v_col.physical_type, __pyx_v_col.min); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 102, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
-      if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_min, __pyx_t_8) < 0) __PYX_ERR(0, 96, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_min, __pyx_t_8) < 0) __PYX_ERR(0, 99, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-      /* "rugo/parquet/metadata_reader.pyx":100
+      /* "rugo/parquet/metadata_reader.pyx":103
  *                 "logical_type": logical_type_str,
  *                 "min": decode_value(col.physical_type, col.min),
  *                 "max": decode_value(col.physical_type, col.max),             # <<<<<<<<<<<<<<
  *                 "null_count": col.null_count,
  *                 "bloom_offset": col.bloom_offset,
 */
-      __pyx_t_8 = __pyx_f_4rugo_7parquet_decode_value(__pyx_v_col.physical_type, __pyx_v_col.max); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 100, __pyx_L1_error)
+      __pyx_t_8 = __pyx_f_4rugo_7parquet_decode_value(__pyx_v_col.physical_type, __pyx_v_col.max); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 103, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
-      if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_max, __pyx_t_8) < 0) __PYX_ERR(0, 96, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_max, __pyx_t_8) < 0) __PYX_ERR(0, 99, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-      /* "rugo/parquet/metadata_reader.pyx":101
+      /* "rugo/parquet/metadata_reader.pyx":104
  *                 "min": decode_value(col.physical_type, col.min),
  *                 "max": decode_value(col.physical_type, col.max),
  *                 "null_count": col.null_count,             # <<<<<<<<<<<<<<
  *                 "bloom_offset": col.bloom_offset,
  *                 "bloom_length": col.bloom_length,
 */
-      __pyx_t_8 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_col.null_count); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 101, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_col.null_count); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 104, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
-      if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_null_count, __pyx_t_8) < 0) __PYX_ERR(0, 96, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_null_count, __pyx_t_8) < 0) __PYX_ERR(0, 99, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-      /* "rugo/parquet/metadata_reader.pyx":102
+      /* "rugo/parquet/metadata_reader.pyx":105
  *                 "max": decode_value(col.physical_type, col.max),
  *                 "null_count": col.null_count,
  *                 "bloom_offset": col.bloom_offset,             # <<<<<<<<<<<<<<
  *                 "bloom_length": col.bloom_length,
  *             })
 */
-      __pyx_t_8 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_col.bloom_offset); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 102, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_col.bloom_offset); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 105, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
-      if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_bloom_offset, __pyx_t_8) < 0) __PYX_ERR(0, 96, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_bloom_offset, __pyx_t_8) < 0) __PYX_ERR(0, 99, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-      /* "rugo/parquet/metadata_reader.pyx":103
+      /* "rugo/parquet/metadata_reader.pyx":106
  *                 "null_count": col.null_count,
  *                 "bloom_offset": col.bloom_offset,
  *                 "bloom_length": col.bloom_length,             # <<<<<<<<<<<<<<
  *             })
  *         result["row_groups"].append(rg_dict)
 */
-      __pyx_t_8 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_col.bloom_length); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 103, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyLong_From_PY_LONG_LONG(__pyx_v_col.bloom_length); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 106, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
-      if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_bloom_length, __pyx_t_8) < 0) __PYX_ERR(0, 96, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_bloom_length, __pyx_t_8) < 0) __PYX_ERR(0, 99, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-      /* "rugo/parquet/metadata_reader.pyx":95
+      /* "rugo/parquet/metadata_reader.pyx":98
  *             else:
  *                 logical_type_str = ""
  *             rg_dict["columns"].append({             # <<<<<<<<<<<<<<
  *                 "name": col.name.decode("utf-8"),
  *                 "type": col.physical_type.decode("utf-8"),
 */
-      __pyx_t_9 = __Pyx_PyObject_Append(__pyx_t_1, __pyx_t_2); if (unlikely(__pyx_t_9 == ((int)-1))) __PYX_ERR(0, 95, __pyx_L1_error)
+      __pyx_t_9 = __Pyx_PyObject_Append(__pyx_t_1, __pyx_t_2); if (unlikely(__pyx_t_9 == ((int)-1))) __PYX_ERR(0, 98, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-      /* "rugo/parquet/metadata_reader.pyx":90
+      /* "rugo/parquet/metadata_reader.pyx":93
  *             "columns": []
  *         }
  *         for col in rg.columns:             # <<<<<<<<<<<<<<
@@ -5004,18 +5004,18 @@ static PyObject *__pyx_f_4rugo_7parquet__read_metadata_common(uint8_t const *__p
 */
     }
 
-    /* "rugo/parquet/metadata_reader.pyx":105
+    /* "rugo/parquet/metadata_reader.pyx":108
  *                 "bloom_length": col.bloom_length,
  *             })
  *         result["row_groups"].append(rg_dict)             # <<<<<<<<<<<<<<
  *     return result
 */
-    __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_result, __pyx_mstate_global->__pyx_n_u_row_groups); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 105, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_result, __pyx_mstate_global->__pyx_n_u_row_groups); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 108, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_9 = __Pyx_PyObject_Append(__pyx_t_2, __pyx_v_rg_dict); if (unlikely(__pyx_t_9 == ((int)-1))) __PYX_ERR(0, 105, __pyx_L1_error)
+    __pyx_t_9 = __Pyx_PyObject_Append(__pyx_t_2, __pyx_v_rg_dict); if (unlikely(__pyx_t_9 == ((int)-1))) __PYX_ERR(0, 108, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "rugo/parquet/metadata_reader.pyx":84
+    /* "rugo/parquet/metadata_reader.pyx":87
  *         "row_groups": []
  *     }
  *     for rg in fs.row_groups:             # <<<<<<<<<<<<<<
@@ -5024,7 +5024,7 @@ static PyObject *__pyx_f_4rugo_7parquet__read_metadata_common(uint8_t const *__p
 */
   }
 
-  /* "rugo/parquet/metadata_reader.pyx":106
+  /* "rugo/parquet/metadata_reader.pyx":109
  *             })
  *         result["row_groups"].append(rg_dict)
  *     return result             # <<<<<<<<<<<<<<
@@ -5034,8 +5034,8 @@ static PyObject *__pyx_f_4rugo_7parquet__read_metadata_common(uint8_t const *__p
   __pyx_r = __pyx_v_result;
   goto __pyx_L0;
 
-  /* "rugo/parquet/metadata_reader.pyx":76
- *     return _read_metadata_common(buf, size)
+  /* "rugo/parquet/metadata_reader.pyx":79
+ * 
  * 
  * cdef object _read_metadata_common(const uint8_t* buf, size_t size):             # <<<<<<<<<<<<<<
  *     cdef metadata_reader.FileStats fs
@@ -5423,7 +5423,7 @@ __Pyx_RefNannySetupContext("PyInit_parquet", 0);
   /*--- Execution code ---*/
 
   /* "rugo/parquet/metadata_reader.pyx":7
- * from libc.stdint cimport uint8_t
+ * from libcpp.string cimport string
  * 
  * import datetime             # <<<<<<<<<<<<<<
  * import struct
@@ -5458,28 +5458,28 @@ __Pyx_RefNannySetupContext("PyInit_parquet", 0);
   if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_read_metadata, __pyx_t_2) < 0) __PYX_ERR(0, 53, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "rugo/parquet/metadata_reader.pyx":59
- *     return read_metadata_from_bytes(data)
+  /* "rugo/parquet/metadata_reader.pyx":60
+ * 
  * 
  * def read_metadata_from_bytes(bytes data):             # <<<<<<<<<<<<<<
  *     """Read parquet metadata from an in-memory bytes object."""
  *     cdef const uint8_t* buf = <const uint8_t*> data
 */
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_4rugo_7parquet_3read_metadata_from_bytes, 0, __pyx_mstate_global->__pyx_n_u_read_metadata_from_bytes, NULL, __pyx_mstate_global->__pyx_n_u_rugo_parquet, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 59, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_4rugo_7parquet_3read_metadata_from_bytes, 0, __pyx_mstate_global->__pyx_n_u_read_metadata_from_bytes, NULL, __pyx_mstate_global->__pyx_n_u_rugo_parquet, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 60, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_read_metadata_from_bytes, __pyx_t_2) < 0) __PYX_ERR(0, 59, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_read_metadata_from_bytes, __pyx_t_2) < 0) __PYX_ERR(0, 60, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "rugo/parquet/metadata_reader.pyx":65
- *     return _read_metadata_common(buf, size)
+  /* "rugo/parquet/metadata_reader.pyx":67
+ * 
  * 
  * def read_metadata_from_memoryview(memoryview mv):             # <<<<<<<<<<<<<<
  *     """Read parquet metadata from a Python memoryview (zero-copy)."""
  *     if not mv.contiguous:
 */
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_4rugo_7parquet_5read_metadata_from_memoryview, 0, __pyx_mstate_global->__pyx_n_u_read_metadata_from_memoryview, NULL, __pyx_mstate_global->__pyx_n_u_rugo_parquet, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[2])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 65, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_4rugo_7parquet_5read_metadata_from_memoryview, 0, __pyx_mstate_global->__pyx_n_u_read_metadata_from_memoryview, NULL, __pyx_mstate_global->__pyx_n_u_rugo_parquet, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[2])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 67, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_read_metadata_from_memoryview, __pyx_t_2) < 0) __PYX_ERR(0, 65, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_read_metadata_from_memoryview, __pyx_t_2) < 0) __PYX_ERR(0, 67, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "rugo/parquet/metadata_reader.pyx":1
@@ -5638,7 +5638,7 @@ static int __Pyx_InitStrings(__Pyx_StringTabEntry const *t, PyObject **target, c
 static int __Pyx_InitCachedBuiltins(__pyx_mstatetype *__pyx_mstate) {
   CYTHON_UNUSED_VAR(__pyx_mstate);
   __pyx_builtin_open = __Pyx_GetBuiltinName(__pyx_mstate->__pyx_n_u_open); if (!__pyx_builtin_open) __PYX_ERR(0, 55, __pyx_L1_error)
-  __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_mstate->__pyx_n_u_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(0, 68, __pyx_L1_error)
+  __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_mstate->__pyx_n_u_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(0, 70, __pyx_L1_error)
   return 0;
   __pyx_L1_error:;
   return -1;
@@ -5729,12 +5729,12 @@ static int __Pyx_CreateCodeObjects(__pyx_mstatetype *__pyx_mstate) {
     __pyx_mstate_global->__pyx_codeobj_tab[0] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_rugo_parquet_metadata_reader_pyx, __pyx_mstate->__pyx_n_u_read_metadata, __pyx_k_QfIQ_q_Q_1A, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[0])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 3, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 59, 31};
+    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 3, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 60, 31};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_data, __pyx_mstate->__pyx_n_u_buf, __pyx_mstate->__pyx_n_u_size};
     __pyx_mstate_global->__pyx_codeobj_tab[1] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_rugo_parquet_metadata_reader_pyx, __pyx_mstate->__pyx_n_u_read_metadata_from_bytes, __pyx_k_q_s_1_a, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[1])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 4, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 65, 61};
+    const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 4, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 67, 61};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_mv, __pyx_mstate->__pyx_n_u_mv_bytes, __pyx_mstate->__pyx_n_u_buf, __pyx_mstate->__pyx_n_u_size};
     __pyx_mstate_global->__pyx_codeobj_tab[2] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_rugo_parquet_metadata_reader_pyx, __pyx_mstate->__pyx_n_u_read_metadata_from_memoryview, __pyx_k_t2Q_j_q_axq_xq_a, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[2])) goto bad;
   }
