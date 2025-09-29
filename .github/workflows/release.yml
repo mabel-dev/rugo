@@ -14,7 +14,7 @@ on:
         default: false
         type: boolean
 
-# No pinned Cython version - use flexible requirement from pyproject.toml
+# Simplified Linux build - Uses Ubuntu-based containers only
 
 jobs:
   build_wheels:
@@ -40,22 +40,21 @@ jobs:
     - name: Build wheels
       run: python -m cibuildwheel --output-dir wheelhouse
       env:
-        # Build wheels for Python 3.8-3.12
+        # Build wheels for Python 3.8-3.12 on manylinux (Ubuntu-based)
         CIBW_BUILD: "cp38-* cp39-* cp310-* cp311-* cp312-*"
         
         # Skip 32-bit builds and PyPy
         CIBW_SKIP: "*-manylinux_i686 pp*"
         
+        # Use Ubuntu-based manylinux images
+        CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
+        CIBW_MANYLINUX_AARCH64_IMAGE: "manylinux2014"
+        
         # Install build dependencies
         CIBW_BEFORE_BUILD: "pip install Cython setuptools wheel"
         
-        # Ensure C++ compiler is available on Linux
-        CIBW_BEFORE_ALL_LINUX: |
-          if command -v apt-get; then
-            apt-get update && apt-get install -y g++;
-          elif command -v yum; then
-            yum install -y gcc-c++;
-          fi
+        # Ensure C++ compiler is available on Linux (Ubuntu-based)
+        CIBW_BEFORE_ALL_LINUX: "apt-get update && apt-get install -y g++"
         
         # Test command
         CIBW_TEST_COMMAND: "python -c \"import rugo.parquet; print('Import successful')\""
