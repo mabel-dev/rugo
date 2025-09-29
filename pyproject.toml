@@ -10,8 +10,7 @@ readme = "README.md"
 authors = [
     {name = "Justin Joyce", email = "justin.joyce@joocer.com"}
 ]
-license = "Apache-2.0"
-license-files = ["LICENSE"]
+license = {file = "LICENSE"}
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
