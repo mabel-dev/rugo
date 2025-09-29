@@ -33,6 +33,11 @@ struct FileStats {
 };
 
 FileStats ReadParquetMetadata(const std::string& path);
+FileStats ReadParquetMetadataFromBuffer(const uint8_t* buf, size_t size);
+
+inline FileStats ReadParquetMetadataC(const char* path) {
+    return ReadParquetMetadata(std::string(path));
+}
 
 // New functions for bloom filter testing
 bool TestBloomFilter(const std::string& file_path, int64_t bloom_offset, int64_t bloom_length, const std::string& value);
