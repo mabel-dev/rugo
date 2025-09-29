@@ -34,7 +34,7 @@ cd rugo
 
 # Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate
 
 # Install build dependencies
 pip install setuptools cython
@@ -308,7 +308,7 @@ make test
 - **Logical type detection** - STRING, TIMESTAMP, DECIMAL, etc.
 - **Bloom filter testing** - Value presence checks without data scanning
 - **Statistics decoding** - Min/max values properly typed and decoded
-- **Cross-platform support** - Linux, macOS, Windows
+- **Cross-platform support** - Linux, macOS
 
 **🎯 Focus Areas:**
 Rugo is laser-focused on being the fastest Parquet metadata reader available. It doesn't try to be everything to everyone - it does one thing exceptionally well.
