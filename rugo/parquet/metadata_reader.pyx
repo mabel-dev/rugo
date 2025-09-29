@@ -4,7 +4,7 @@
 import datetime
 import struct
 
-import metadata_reader
+cimport metadata_reader
 from libc.stdint cimport uint8_t
 from libcpp.string cimport string
 
