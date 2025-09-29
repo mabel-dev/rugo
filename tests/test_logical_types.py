@@ -4,14 +4,12 @@ Test script for rugo parquet features:
 1. Logical type extraction
 """
 
+import glob
 import sys
 from pathlib import Path
+import pyarrow.parquet as pq
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-
-import glob
-
-import pyarrow.parquet as pq
 
 import rugo.parquet as parquet_meta
 
