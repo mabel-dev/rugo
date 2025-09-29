@@ -1,0 +1,172 @@
+name: Build and Publish to PyPI
+
+on:
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      publish_to_test:
+        description: 'Publish to Test PyPI'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  CYTHON_VERSION: "3.0.11"
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install cibuildwheel
+      run: python -m pip install cibuildwheel==2.16.2
+
+    - name: Build wheels
+      run: python -m cibuildwheel --output-dir wheelhouse
+      env:
+        # Build wheels for Python 3.8-3.12
+        CIBW_BUILD: "cp38-* cp39-* cp310-* cp311-* cp312-*"
+        
+        # Skip 32-bit builds and PyPy
+        CIBW_SKIP: "*-win32 *-manylinux_i686 pp*"
+        
+        # Install build dependencies
+        CIBW_BEFORE_BUILD: "pip install Cython==${{ env.CYTHON_VERSION }} setuptools wheel"
+        
+        # Ensure C++ compiler is available on Linux
+        CIBW_BEFORE_ALL_LINUX: "yum install -y gcc-c++ || apt-get update && apt-get install -y g++"
+        
+        # Test command
+        CIBW_TEST_COMMAND: "python -c \"import rugo.parquet; print('Import successful')\""
+        
+        # Skip testing on emulated architectures
+        CIBW_TEST_SKIP: "*-*linux_{aarch64,ppc64le,s390x} *-win32"
+
+        # Configure architectures for each platform
+        CIBW_ARCHS_LINUX: "x86_64 aarch64"
+        CIBW_ARCHS_MACOS: "x86_64 arm64"
+        CIBW_ARCHS_WINDOWS: "AMD64"
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: wheels-${{ matrix.os }}
+        path: ./wheelhouse/*.whl
+
+  build_sdist:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build setuptools wheel Cython==${{ env.CYTHON_VERSION }}
+
+    - name: Build sdist
+      run: python -m build --sdist
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: sdist
+        path: dist/*.tar.gz
+
+  publish:
+    needs: [build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
+    environment: pypi
+    permissions:
+      id-token: write
+
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: wheels-ubuntu-latest
+        path: dist
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: wheels-windows-latest
+        path: dist
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: wheels-macos-13
+        path: dist
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: wheels-macos-14
+        path: dist
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: sdist
+        path: dist
+
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish_test:
+    needs: [build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_test
+    environment: test-pypi
+    permissions:
+      id-token: write
+
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: wheels-ubuntu-latest
+        path: dist
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: wheels-windows-latest
+        path: dist
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: wheels-macos-13
+        path: dist
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: wheels-macos-14
+        path: dist
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: sdist
+        path: dist
+
+    - name: Publish to Test PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/

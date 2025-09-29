@@ -11,10 +11,19 @@ A lightning-fast Parquet file reader built with C++ and Cython, optimized for ul
 - **🏗️ C++ core with Cython bindings** - Maximum performance with Python convenience
 - **📊 Complete schema information** - Physical types, logical types, and statistics
 - **🌸 Bloom filter support** - Test value presence without reading data
+- **🔄 Schema conversion** - Convert rugo schemas to orso format (optional)
 - **🔬 Zero dependencies** - No runtime dependencies for core functionality
 - **✅ PyArrow compatible** - Validated results, drop-in replacement for metadata operations
 
 ## 📦 Installation
+
+```bash
+# Basic installation (coming soon to PyPI)
+pip install rugo
+
+# With orso schema conversion support
+pip install rugo[orso]
+```
 
 ### From Source
 
@@ -120,6 +129,37 @@ for col in metadata['row_groups'][0]['columns']:
         else:
             print(f"Value definitely not in column {col['name']}")
 ```
+
+#### Schema Conversion to Orso
+
+Convert rugo parquet schemas to [orso](https://github.com/mabel-dev/orso) format:
+
+```python
+from rugo.converters.orso import rugo_to_orso_schema, extract_schema_only
+import rugo.parquet as parquet_meta
+
+# Read parquet metadata
+metadata = parquet_meta.read_metadata("example.parquet")
+
+# Convert to orso RelationSchema
+orso_schema = rugo_to_orso_schema(metadata, "my_table")
+
+print(f"Schema: {orso_schema.name}")
+print(f"Columns: {len(orso_schema.columns)}")
+print(f"Estimated rows: {orso_schema.row_count_estimate}")
+
+# Access individual columns
+for column in orso_schema.columns[:3]:
+    print(f"{column.name}: {column.type} ({'nullable' if column.nullable else 'not null'})")
+
+# Or get a simplified column mapping
+schema_info = extract_schema_only(metadata, "simple_name")
+print("Column types:", schema_info['columns'])
+```
+
+**Note:** Orso conversion requires the optional `orso` dependency:
+```bash
+pip install rugo[orso]
 
 ### Metadata Structure
 
