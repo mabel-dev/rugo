@@ -14,8 +14,7 @@ on:
         default: false
         type: boolean
 
-env:
-  CYTHON_VERSION: "3.0.11"
+# No pinned Cython version - use flexible requirement from pyproject.toml
 
 jobs:
   build_wheels:
@@ -48,7 +47,7 @@ jobs:
         CIBW_SKIP: "*-win32 *-manylinux_i686 pp*"
         
         # Install build dependencies
-        CIBW_BEFORE_BUILD: "pip install Cython==${{ env.CYTHON_VERSION }} setuptools wheel"
+        CIBW_BEFORE_BUILD: "pip install Cython setuptools wheel"
         
         # Ensure C++ compiler is available on Linux
         CIBW_BEFORE_ALL_LINUX: "yum install -y gcc-c++ || apt-get update && apt-get install -y g++"
@@ -85,7 +84,7 @@ jobs:
     - name: Install build dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install build setuptools wheel Cython==${{ env.CYTHON_VERSION }}
+        pip install build setuptools wheel Cython
 
     - name: Build sdist
       run: python -m build --sdist
