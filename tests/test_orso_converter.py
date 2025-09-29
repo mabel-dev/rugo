@@ -8,13 +8,16 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import pytest
+
 import rugo.parquet as parquet_meta
 
 # Try to import orso components
 try:
-    from rugo.converters.orso import rugo_to_orso_schema, extract_schema_only, _map_parquet_type_to_orso
-    from orso.schema import RelationSchema, FlatColumn
+    from orso.schema import RelationSchema
     from orso.types import OrsoTypes
+
+    from rugo.converters.orso import (_map_parquet_type_to_orso,
+                                      extract_schema_only, rugo_to_orso_schema)
     ORSO_AVAILABLE = True
 except ImportError:
     ORSO_AVAILABLE = False

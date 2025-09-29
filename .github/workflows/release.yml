@@ -50,7 +50,12 @@ jobs:
         CIBW_BEFORE_BUILD: "pip install Cython setuptools wheel"
         
         # Ensure C++ compiler is available on Linux
-        CIBW_BEFORE_ALL_LINUX: "apt-get update && apt-get install -y g++"
+        CIBW_BEFORE_ALL_LINUX: |
+          if command -v apt-get; then
+            apt-get update && apt-get install -y g++;
+          elif command -v yum; then
+            yum install -y gcc-c++;
+          fi
         
         # Test command
         CIBW_TEST_COMMAND: "python -c \"import rugo.parquet; print('Import successful')\""
