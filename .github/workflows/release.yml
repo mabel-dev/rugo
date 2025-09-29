@@ -14,88 +14,51 @@ on:
         default: false
         type: boolean
 
-# Simplified Linux build - Uses Ubuntu-based containers only
-
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-13, macos-14]
+        os: [ubuntu-latest, macos-latest]
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-    - name: Install cibuildwheel
-      run: python -m pip install cibuildwheel==2.16.2
+      - run: pip install cibuildwheel==2.16.2
 
-    - name: Build wheels
-      run: python -m cibuildwheel --output-dir wheelhouse
-      env:
-        # Build wheels for Python 3.8-3.12 on manylinux (Ubuntu-based)
-        CIBW_BUILD: "cp38-* cp39-* cp310-* cp311-* cp312-*"
-        
-        # Skip 32-bit builds and PyPy
-        CIBW_SKIP: "*-manylinux_i686 pp*"
-        
-        # Use Ubuntu-based manylinux images
-        CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
-        CIBW_MANYLINUX_AARCH64_IMAGE: "manylinux2014"
-        
-        # Install build dependencies
-        CIBW_BEFORE_BUILD: "pip install Cython setuptools wheel"
-        
-        # Ensure C++ compiler is available on Linux (Ubuntu-based)
-        CIBW_BEFORE_ALL_LINUX: "apt-get update && apt-get install -y g++"
-        
-        # Test command
-        CIBW_TEST_COMMAND: "python -c \"import rugo.parquet; print('Import successful')\""
-        
-        # Skip testing on emulated architectures
-        CIBW_TEST_SKIP: "*-*linux_{aarch64,ppc64le,s390x}"
+      - name: Build wheels
+        run: python -m cibuildwheel --output-dir wheelhouse
+        env:
+          CIBW_BUILD: "cp38-* cp39-* cp310-* cp311-* cp312-*"
+          CIBW_SKIP: "pp* *-manylinux_i686"
+          CIBW_BEFORE_BUILD: "pip install -U pip setuptools wheel Cython"
+          CIBW_TEST_COMMAND: "python -c \"import rugo.parquet; print('Import successful')\""
+          CIBW_TEST_SKIP: "*-*linux_{aarch64,ppc64le,s390x}"
+          CIBW_ARCHS_MACOS: "x86_64 arm64"
+          CIBW_ARCHS_LINUX: "x86_64 aarch64"
 
-        # Configure architectures for each platform
-        CIBW_ARCHS_LINUX: "x86_64 aarch64"
-        CIBW_ARCHS_MACOS: "x86_64 arm64"
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: wheels-${{ matrix.os }}
-        path: ./wheelhouse/*.whl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: wheelhouse/*.whl
 
   build_sdist:
-    name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-
-    - name: Install build dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install build setuptools wheel Cython
-
-    - name: Build sdist
-      run: python -m build --sdist
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: sdist
-        path: dist/*.tar.gz
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install build setuptools wheel Cython
+      - run: python -m build --sdist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/*.tar.gz
 
   publish:
     needs: [build_wheels, build_sdist]
@@ -104,30 +67,14 @@ jobs:
     environment: pypi
     permissions:
       id-token: write
-
     steps:
-    - uses: actions/download-artifact@v4
-      with:
-        name: wheels-ubuntu-latest
-        path: dist
-
-    - uses: actions/download-artifact@v4
-      with:
-        name: wheels-macos-13
-        path: dist
-
-    - uses: actions/download-artifact@v4
-      with:
-        name: wheels-macos-14
-        path: dist
-
-    - uses: actions/download-artifact@v4
-      with:
-        name: sdist
-        path: dist
-
-    - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: actions/download-artifact@v4
+        with: {name: wheels-ubuntu-latest, path: dist}
+      - uses: actions/download-artifact@v4
+        with: {name: wheels-macos-latest, path: dist}
+      - uses: actions/download-artifact@v4
+        with: {name: sdist, path: dist}
+      - uses: pypa/gh-action-pypi-publish@release/v1
 
   publish_test:
     needs: [build_wheels, build_sdist]
@@ -136,29 +83,13 @@ jobs:
     environment: test-pypi
     permissions:
       id-token: write
-
     steps:
-    - uses: actions/download-artifact@v4
-      with:
-        name: wheels-ubuntu-latest
-        path: dist
-
-    - uses: actions/download-artifact@v4
-      with:
-        name: wheels-macos-13
-        path: dist
-
-    - uses: actions/download-artifact@v4
-      with:
-        name: wheels-macos-14
-        path: dist
-
-    - uses: actions/download-artifact@v4
-      with:
-        name: sdist
-        path: dist
-
-    - name: Publish to Test PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        repository-url: https://test.pypi.org/legacy/
+      - uses: actions/download-artifact@v4
+        with: {name: wheels-ubuntu-latest, path: dist}
+      - uses: actions/download-artifact@v4
+        with: {name: wheels-macos-latest, path: dist}
+      - uses: actions/download-artifact@v4
+        with: {name: sdist, path: dist}
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
