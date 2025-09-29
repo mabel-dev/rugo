@@ -1,0 +1,13 @@
+# Include all C++ source and header files
+include rugo/parquet/*.cpp
+include rugo/parquet/*.hpp
+include rugo/parquet/*.pyx
+include rugo/parquet/*.pxd
+
+# Include project metadata
+include README.md
+include LICENSE
+include pyproject.toml
+
+# Include tests
+recursive-include tests *.py
