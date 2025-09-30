@@ -30,7 +30,7 @@ static inline const char* ParquetTypeToString(int t) {
 
 static inline const char* LogicalTypeToString(int t) {
     switch (t) {
-        case 0: return "varchar";  // UTF8 -> varchar
+        case 0: return "varchar";  // UTF8
         case 1: return "MAP";
         case 2: return "LIST";
         case 3: return "ENUM";
@@ -570,6 +570,8 @@ static FileStats ParseFileMeta(TInput& in) {
                             } else if (col.physical_type == "byte_array") {
                                 // Default byte_array without logical type to binary
                                 col.logical_type = "binary";
+                            } else {
+                                col.logical_type = col.physical_type; // fallback to physical type
                             }
                         }
                     }

@@ -8,10 +8,32 @@ import glob
 import sys
 from pathlib import Path
 import pyarrow.parquet as pq
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import rugo.parquet as parquet_meta
+
+# these are specific to the test files only
+EQUIVALENT_TYPES = {
+    "array<varchar>": ["list<item: string>", "list<element: string>"],
+    "binary": ["binary"],
+    "boolean": ["bool"],
+    "date32[day]": ["date32[day]"],
+    "decimal(7,3)": ["decimal128(7, 3)"],
+    "fixed_len_byte_array[5]": ["fixed_size_binary[5]"],
+    "float16": ["halffloat"],
+    "float32": ["float"],
+    "float64": ["double"],
+    "int16": ["int16"],
+    "int32": ["int32"],
+    "int64": ["int64"],
+    "int96": ["timestamp[ns]"],  # Parquet INT96 is often used for timestamps
+    "timestamp[ms,UTC]": ["timestamp[us]"],
+    "timestamp[ns]": ["timestamp[ns]"],
+    "uint16": ["uint16"],
+    "varchar": ["string"],
+}
 
 
 def test_logical_types():
@@ -54,18 +76,16 @@ def test_comparison_with_pyarrow():
         # PyArrow interpretation
         pf = pq.ParquetFile(file_path)
         schema = pf.schema.to_arrow_schema()
-        print("  PyArrow schema:")
-        for field in schema:
-            print(f"    {field.name:20} | {field.type}")
+        arrow_types = {field.name: str(field.type) for field in schema} 
         
         # Our interpretation
         meta = parquet_meta.read_metadata(file_path)
-        print("  Rugo interpretation:")
+        print("   schema:")
         for col in meta['row_groups'][0]['columns']:
             logical = col.get('logical_type', '')
-            print(f"    {col['name']:20} | physical={col['type']:12} | logical={logical or '(none)'}")
+            print(f"    {col['name']:20} | physical={col['type']:17} | logical={logical or '(none)':<17}  | arrow={arrow_types.get(col['name'], '(missing)')}")
+            assert arrow_types.get(col['name']) in EQUIVALENT_TYPES.get(logical, []), col['name']
 
 
-if __name__ == '__main__':
-    test_logical_types()
-    test_comparison_with_pyarrow()
+if __name__ == "__main__":
+    pytest.main([__file__])
