@@ -22,19 +22,19 @@ cdef object decode_value(string physical_type, string logical_type, string raw):
     cdef str logical_str = logical_type.decode("utf-8") if logical_type.size() > 0 else ""
 
     try:
-        if type_str == "INT32":
+        if type_str == "int32":
             return struct.unpack("<i", b)[0]
-        elif type_str == "INT64":
+        elif type_str == "int64":
             return struct.unpack("<q", b)[0]
-        elif type_str == "FLOAT":
+        elif type_str == "float32":
             return struct.unpack("<f", b)[0]
-        elif type_str == "DOUBLE":
+        elif type_str == "float64":
             return struct.unpack("<d", b)[0]
-        elif type_str in ("BYTE_ARRAY", "FIXED_LEN_BYTE_ARRAY"):
+        elif type_str in ("byte_array", "fixed_len_byte_array"):
             # If logical type indicates UTF-8 string, decode it
-            # Handle both new format ("string") and legacy format ("UTF8")
-            # Also handle array<string> - the elements are UTF-8 strings
-            if logical_str in ("string", "UTF8", "JSON", "BSON", "ENUM") or logical_str.startswith("array<string"):
+            # Handle "varchar" (new format) and legacy "UTF8" format
+            # Also handle array<string> and array<varchar> - the elements are UTF-8 strings
+            if logical_str in ("varchar", "UTF8", "JSON", "BSON", "ENUM") or logical_str.startswith("array<string") or logical_str.startswith("array<varchar"):
                 try:
                     return b.decode("utf-8")
                 except UnicodeDecodeError:
@@ -42,7 +42,7 @@ cdef object decode_value(string physical_type, string logical_type, string raw):
                     return b
             # Otherwise, return raw bytes (binary data)
             return b
-        elif type_str == "INT96":
+        elif type_str == "int96":
             if len(b) == 12:
                 lo, hi = struct.unpack("<qI", b)
                 julian_day = hi

@@ -16,21 +16,21 @@ static inline uint32_t ReadLE32(const uint8_t* p) {
 
 static inline const char* ParquetTypeToString(int t) {
     switch (t) {
-        case 0: return "BOOLEAN";
-        case 1: return "INT32";
-        case 2: return "INT64";
-        case 3: return "INT96";
-        case 4: return "FLOAT";
-        case 5: return "DOUBLE";
-        case 6: return "BYTE_ARRAY";
-        case 7: return "FIXED_LEN_BYTE_ARRAY";
-        default: return "UNKNOWN";
+        case 0: return "boolean";
+        case 1: return "int32";
+        case 2: return "int64";
+        case 3: return "int96";
+        case 4: return "float32";
+        case 5: return "float64";
+        case 6: return "byte_array";
+        case 7: return "fixed_len_byte_array";
+        default: return "unknown";
     }
 }
 
 static inline const char* LogicalTypeToString(int t) {
     switch (t) {
-        case 0: return "UTF8";
+        case 0: return "varchar";  // UTF8 -> varchar
         case 1: return "MAP";
         case 2: return "LIST";
         case 3: return "ENUM";
@@ -90,7 +90,7 @@ static std::string ParseLogicalType(TInput& in) {
         switch (fh.id) {
             case 1: { // STRING (StringType - empty struct)
                 SkipStruct(in); // Just skip the empty StringType struct
-                result = "string";
+                result = "varchar";  // Use varchar for STRING type
                 break;
             }
             case 2: { // MAP (MapType - empty struct)
@@ -565,11 +565,12 @@ static FileStats ParseFileMeta(TInput& in) {
                             col.logical_type = it->second;
                         } else {
                             // Infer common logical types from physical types when not explicitly defined
-                            if (col.physical_type == "INT96") {
+                            if (col.physical_type == "int96") {
                                 col.logical_type = "timestamp[ns]"; // INT96 is usually timestamp
+                            } else if (col.physical_type == "byte_array") {
+                                // Default byte_array without logical type to binary
+                                col.logical_type = "binary";
                             }
-                            // Note: Do NOT default BYTE_ARRAY to "string" - leave empty to indicate binary
-                            // Only set to "string" if explicitly marked as UTF8 in the schema
                         }
                     }
                     
