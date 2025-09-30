@@ -36,3 +36,6 @@ compile:
 	rm -rf build dist *.egg-info
 	python setup.py clean
 	python setup.py build_ext --inplace -j 8
+
+verify-version:
+	python verify_version.py
