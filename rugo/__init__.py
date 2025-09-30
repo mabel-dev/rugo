@@ -5,7 +5,13 @@ A lightning-fast Parquet metadata reader built with C++ and Cython.
 Optimized for ultra-fast metadata extraction and analysis.
 """
 
-__version__ = "0.1.0"
+try:
+    from importlib.metadata import version
+    __version__ = version("rugo")
+except Exception:
+    # Fallback version for development/editable installs
+    __version__ = "0.1.1"
+
 __author__ = "Mabel Dev"
 
 # Import converters for easy access
