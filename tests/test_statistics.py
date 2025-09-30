@@ -15,8 +15,8 @@ FILES = glob.glob("tests/data/*.parquet")
 def encode_value(val):
     if isinstance(val, bool):
         return f"0{int(val)}"
-    if isinstance(val, str):
-        return val.encode("utf-8")
+    # Strings are now returned as-is (UTF-8 decoded) to match rugo behavior
+    # Binary data is returned as bytes
     if isinstance(val, datetime.datetime):
         if val.tzinfo is None:
             val = val.replace(tzinfo=datetime.timezone.utc)

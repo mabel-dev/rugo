@@ -10,7 +10,7 @@ from libcpp.string cimport string
 
 
 # --- value decoder ---
-cdef object decode_value(string physical_type, string raw):
+cdef object decode_value(string physical_type, string logical_type, string raw):
     cdef bytes b = raw
     if b is None:
         return None
@@ -19,19 +19,29 @@ cdef object decode_value(string physical_type, string raw):
 
     # Decode the C++ string to Python string for comparison
     cdef str type_str = physical_type.decode("utf-8")
+    cdef str logical_str = logical_type.decode("utf-8") if logical_type.size() > 0 else ""
 
     try:
-        if type_str == "int32":
+        if type_str == "INT32":
             return struct.unpack("<i", b)[0]
-        elif type_str == "int64":
+        elif type_str == "INT64":
             return struct.unpack("<q", b)[0]
-        elif type_str == "float32":
+        elif type_str == "FLOAT":
             return struct.unpack("<f", b)[0]
-        elif type_str == "float64":
+        elif type_str == "DOUBLE":
             return struct.unpack("<d", b)[0]
-        elif type_str in ("byte_array", "fixed_len_byte_array"):
+        elif type_str in ("BYTE_ARRAY", "FIXED_LEN_BYTE_ARRAY"):
+            # If logical type indicates UTF-8 string, decode it
+            # Handle both new format ("string") and legacy format ("UTF8")
+            if logical_str in ("string", "UTF8", "JSON", "BSON", "ENUM"):
+                try:
+                    return b.decode("utf-8")
+                except UnicodeDecodeError:
+                    # If UTF-8 decoding fails, return as bytes
+                    return b
+            # Otherwise, return raw bytes (binary data)
             return b
-        elif type_str == "int96":
+        elif type_str == "INT96":
             if len(b) == 12:
                 lo, hi = struct.unpack("<qI", b)
                 julian_day = hi
@@ -98,8 +108,8 @@ cdef object _read_metadata_common(const uint8_t* buf, size_t size):
                 "name": col.name.decode("utf-8"),
                 "type": col.physical_type.decode("utf-8"),
                 "logical_type": logical_type_str,
-                "min": decode_value(col.physical_type, col.min),
-                "max": decode_value(col.physical_type, col.max),
+                "min": decode_value(col.physical_type, col.logical_type, col.min),
+                "max": decode_value(col.physical_type, col.logical_type, col.max),
                 "null_count": col.null_count,
                 "bloom_offset": col.bloom_offset,
                 "bloom_length": col.bloom_length,

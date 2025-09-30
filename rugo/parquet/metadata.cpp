@@ -16,15 +16,15 @@ static inline uint32_t ReadLE32(const uint8_t* p) {
 
 static inline const char* ParquetTypeToString(int t) {
     switch (t) {
-        case 0: return "boolean";
-        case 1: return "int32";
-        case 2: return "int64";
-        case 3: return "int96";
-        case 4: return "float32";
-        case 5: return "float64";
-        case 6: return "byte_array";
-        case 7: return "fixed_len_byte_array";
-        default: return "unknown";
+        case 0: return "BOOLEAN";
+        case 1: return "INT32";
+        case 2: return "INT64";
+        case 3: return "INT96";
+        case 4: return "FLOAT";
+        case 5: return "DOUBLE";
+        case 6: return "BYTE_ARRAY";
+        case 7: return "FIXED_LEN_BYTE_ARRAY";
+        default: return "UNKNOWN";
     }
 }
 
@@ -548,17 +548,28 @@ static FileStats ParseFileMeta(TInput& in) {
                         if (it == logical_type_map.end()) {
                             it = logical_type_map.find("schema." + col.name);
                         }
+                        // Also try all keys that end with the column name (to handle different root names like "hive_schema")
+                        if (it == logical_type_map.end()) {
+                            for (const auto& pair : logical_type_map) {
+                                if (pair.first.size() > col.name.size() && 
+                                    pair.first.compare(pair.first.size() - col.name.size(), col.name.size(), col.name) == 0) {
+                                    // Check if it's a proper suffix (preceded by a dot)
+                                    if (pair.first[pair.first.size() - col.name.size() - 1] == '.') {
+                                        it = logical_type_map.find(pair.first);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                         if (it != logical_type_map.end()) {
                             col.logical_type = it->second;
                         } else {
                             // Infer common logical types from physical types when not explicitly defined
-                            if (col.physical_type == "byte_array") {
-                                col.logical_type = "string"; // Most BYTE_ARRAY are strings
-                            } else if (col.physical_type == "int96") {
+                            if (col.physical_type == "INT96") {
                                 col.logical_type = "timestamp[ns]"; // INT96 is usually timestamp
-                            } else {
-                                col.logical_type = col.physical_type; // Fallback to physical type
                             }
+                            // Note: Do NOT default BYTE_ARRAY to "string" - leave empty to indicate binary
+                            // Only set to "string" if explicitly marked as UTF8 in the schema
                         }
                     }
                     
