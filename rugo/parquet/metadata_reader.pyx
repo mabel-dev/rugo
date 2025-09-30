@@ -54,6 +54,9 @@ cdef object decode_value(string physical_type, string logical_type, string raw):
                 micros = (nanos % 1_000_000_000) // 1000
                 return f"{date.isoformat()} {seconds:02d}:{(micros/1e6):.6f}"
             return b.hex()
+        elif type_str == "boolean":
+            # Parquet encodes boolean as 1 bit, usually in a byte
+            return b[0] != 0
         else:
             return b.hex()
     except Exception:
