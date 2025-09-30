@@ -29,7 +29,7 @@ def _map_parquet_type_to_orso(
         logical_lower = logical_type.lower()
 
         # String types
-        if logical_lower in ("string", "utf8"):
+        if logical_lower in ("string", "utf8", "varchar"):
             return OrsoTypes.VARCHAR
 
         # Date/time types
@@ -42,10 +42,6 @@ def _map_parquet_type_to_orso(
         if logical_lower.startswith("timestamp") or "timestamp" in logical_lower:
             return OrsoTypes.TIMESTAMP
 
-        # Decimal types
-        if logical_lower.startswith("decimal"):
-            return OrsoTypes.DECIMAL
-
         # JSON types
         if logical_lower in ("json", "jsonb"):
             return OrsoTypes.JSONB
@@ -53,6 +49,16 @@ def _map_parquet_type_to_orso(
         # Boolean types
         if logical_lower == "boolean":
             return OrsoTypes.BOOLEAN
+
+        if logical_lower.startswith(("array", "decimal")):
+            _type, _length, _precision, _scale, _element_type = OrsoTypes.from_name(
+                logical_lower
+            )
+            _type._length = _length
+            _type._precision = _precision
+            _type._scale = _scale
+            _type._element_type = _element_type
+            return _type
 
     # Fall back to physical type mapping
     physical_lower = parquet_type.lower()
