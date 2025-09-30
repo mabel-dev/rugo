@@ -10,7 +10,7 @@ try:
     __version__ = version("rugo")
 except Exception:
     # Fallback version for development/editable installs
-    __version__ = "0.1.1"
+    __version__ = "0.0.0"
 
 __author__ = "Mabel Dev"
 
