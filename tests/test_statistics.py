@@ -2,6 +2,7 @@ import datetime
 import glob
 import sys
 import time
+import pytest
 from pathlib import Path
 
 import pyarrow.parquet as pq
@@ -13,8 +14,6 @@ import rugo.parquet as parquet_meta
 FILES = glob.glob("tests/data/*.parquet")
 
 def encode_value(val):
-    if isinstance(val, bool):
-        return f"0{int(val)}"
     # Strings are now returned as-is (UTF-8 decoded) to match rugo behavior
     # Binary data is returned as bytes
     if isinstance(val, datetime.datetime):
@@ -54,7 +53,7 @@ def extract_pyarrow(path: str):
             # Map PyArrow type names to rugo type names
             physical_type = type_map.get(col.physical_type, col.physical_type.lower())
             out["columns"].append({
-                "name": col.path_in_schema,
+                "name": col.path_in_schema.split('.')[0],
                 "type": physical_type,
                 "nulls": stats.null_count if stats else None,
                 "min": encode_value(stats.min) if stats else None,
@@ -89,9 +88,9 @@ def compare(pa, cu):
             continue
             
         if pa_col.get("min") != cu_rg.get("min"):
-            diffs.append(f"Col {i} min mismatch: {pa_col.get('min')} vs {cu_rg.get('min')} ({cu_rg['type']})")
+            diffs.append(f"Col {i} min mismatch: `{pa_col.get('min')}` vs `{cu_rg.get('min')}` ({cu_rg['type']})")
         if pa_col.get("max") != cu_rg.get("max"):
-            diffs.append(f"Col {i} max mismatch: {pa_col.get('max')} vs {cu_rg.get('max')} ({cu_rg['type']})")
+            diffs.append(f"Col {i} max mismatch: `{pa_col.get('max')}` vs `{cu_rg.get('max')}` ({cu_rg['type']})")
     return diffs
 
 def run_one(file: str, iters=100) -> bool:
@@ -134,4 +133,5 @@ def test_compare_arrow_rugo():
             print(f"⚠️  Missing file {f}")
 
 if __name__ == "__main__":
-    test_compare_arrow_rugo()
+    pytest.main([__file__])
+

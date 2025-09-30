@@ -63,3 +63,6 @@ def test_version_matches_pyproject():
         f"Version mismatch: rugo.__version__={rugo.__version__} "
         f"but pyproject.toml has version={pyproject_version}"
     )
+
+if __name__ == "__main__":
+    pytest.main([__file__])

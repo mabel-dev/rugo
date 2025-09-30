@@ -34,7 +34,11 @@ cdef object decode_value(string physical_type, string logical_type, string raw):
             # If logical type indicates UTF-8 string, decode it
             # Handle "varchar" (new format) and legacy "UTF8" format
             # Also handle array<string> and array<varchar> - the elements are UTF-8 strings
-            if logical_str in ("varchar", "UTF8", "JSON", "BSON", "ENUM") or logical_str.startswith("array<string") or logical_str.startswith("array<varchar"):
+            if (
+                logical_str in ("varchar", "UTF8", "JSON", "BSON", "ENUM")
+                or logical_str.startswith("array<string")
+                or logical_str.startswith("array<varchar")
+            ):
                 try:
                     return b.decode("utf-8")
                 except UnicodeDecodeError:
@@ -108,14 +112,14 @@ cdef object _read_metadata_common(const uint8_t* buf, size_t size):
                 logical_type_str = col.logical_type.decode("utf-8")
             else:
                 logical_type_str = ""
-            
+
             # Convert -1 to None for missing stats
             null_count = col.null_count if col.null_count >= 0 else None
-            
+
             # Decode min/max, treating empty strings as None (no stats)
             min_val = decode_value(col.physical_type, col.logical_type, col.min) if col.min.size() > 0 else None
             max_val = decode_value(col.physical_type, col.logical_type, col.max) if col.max.size() > 0 else None
-            
+
             rg_dict["columns"].append({
                 "name": col.name.decode("utf-8"),
                 "type": col.physical_type.decode("utf-8"),

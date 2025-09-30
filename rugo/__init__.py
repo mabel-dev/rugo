@@ -7,6 +7,7 @@ Optimized for ultra-fast metadata extraction and analysis.
 
 try:
     from importlib.metadata import version
+
     __version__ = version("rugo")
 except Exception:
     # Fallback version for development/editable installs
