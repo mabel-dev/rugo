@@ -30,7 +30,7 @@ static inline const char* ParquetTypeToString(int t) {
 
 static inline const char* LogicalTypeToString(int t) {
     switch (t) {
-        case 0: return "UTF8";
+        case 0: return "varchar";  // UTF8 -> varchar
         case 1: return "MAP";
         case 2: return "LIST";
         case 3: return "ENUM";
@@ -90,7 +90,7 @@ static std::string ParseLogicalType(TInput& in) {
         switch (fh.id) {
             case 1: { // STRING (StringType - empty struct)
                 SkipStruct(in); // Just skip the empty StringType struct
-                result = "string";
+                result = "varchar";  // Use varchar for STRING type
                 break;
             }
             case 2: { // MAP (MapType - empty struct)
@@ -548,16 +548,28 @@ static FileStats ParseFileMeta(TInput& in) {
                         if (it == logical_type_map.end()) {
                             it = logical_type_map.find("schema." + col.name);
                         }
+                        // Also try all keys that end with the column name (to handle different root names like "hive_schema")
+                        if (it == logical_type_map.end()) {
+                            for (const auto& pair : logical_type_map) {
+                                if (pair.first.size() > col.name.size() && 
+                                    pair.first.compare(pair.first.size() - col.name.size(), col.name.size(), col.name) == 0) {
+                                    // Check if it's a proper suffix (preceded by a dot)
+                                    if (pair.first[pair.first.size() - col.name.size() - 1] == '.') {
+                                        it = logical_type_map.find(pair.first);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                         if (it != logical_type_map.end()) {
                             col.logical_type = it->second;
                         } else {
                             // Infer common logical types from physical types when not explicitly defined
-                            if (col.physical_type == "byte_array") {
-                                col.logical_type = "string"; // Most BYTE_ARRAY are strings
-                            } else if (col.physical_type == "int96") {
+                            if (col.physical_type == "int96") {
                                 col.logical_type = "timestamp[ns]"; // INT96 is usually timestamp
-                            } else {
-                                col.logical_type = col.physical_type; // Fallback to physical type
+                            } else if (col.physical_type == "byte_array") {
+                                // Default byte_array without logical type to binary
+                                col.logical_type = "binary";
                             }
                         }
                     }
