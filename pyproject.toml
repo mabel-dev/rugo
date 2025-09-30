@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rugo"
-version = "0.1.2"
-description = "Parquet Reader"
+version = "0.1.3"
+description = "Parquet Metadata Reader"
 readme = "README.md"
 authors = [
     {name = "Justin Joyce", email = "justin.joyce@joocer.com"}
