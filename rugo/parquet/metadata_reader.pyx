@@ -1,5 +1,11 @@
 # distutils: language = c++
 # distutils: extra_compile_args = -Wno-unreachable-code-fallthrough
+# cython: language_level=3
+# cython: nonecheck=False
+# cython: cdivision=True
+# cython: boundscheck=False
+# cython: wraparound=False
+# cython: infer_types=True
 
 import datetime
 import struct
@@ -96,6 +102,8 @@ def read_metadata_from_memoryview(memoryview mv):
 cdef object _read_metadata_common(const uint8_t* buf, size_t size):
     cdef metadata_reader.FileStats fs
     fs = metadata_reader.ReadParquetMetadataFromBuffer(buf, size)
+
+    print(fs.num_rows, sum(1 for _ in fs.row_groups))
 
     result = {
         "num_rows": fs.num_rows,

@@ -51,6 +51,7 @@ static inline const char* LogicalTypeToString(int t) {
         case 18: return "JSON";
         case 19: return "BSON";
         case 20: return "INTERVAL";
+        case 21: return "STRUCT";
         default: return "";
     }
 }
@@ -69,14 +70,6 @@ static inline std::string CanonicalizeColumnName(std::string name) {
 
 // ------------------- Schema parsing -------------------
 
-struct SchemaElement {
-    std::string name;
-    std::string logical_type;
-    int num_children = 0;
-    int32_t type_length = 0;   // for FIXED_LEN_BYTE_ARRAY (e.g. flba5)
-    int32_t scale = 0;         // for DECIMAL
-    int32_t precision = 0;     // for DECIMAL
-};
 
 // Correct logical type structure parsing
 static std::string ParseLogicalType(TInput& in) {
@@ -256,6 +249,8 @@ static std::string ParseLogicalType(TInput& in) {
 static SchemaElement ParseSchemaElement(TInput& in) {
     SchemaElement elem;
     int16_t last_id = 0;
+    bool saw_physical_type = false;
+
     while (true) {
         auto fh = ReadFieldHeader(in, last_id);
         if (fh.type == 0) break;
@@ -263,6 +258,7 @@ static SchemaElement ParseSchemaElement(TInput& in) {
         switch (fh.id) {
             case 1: { // type (Physical type)
                 int32_t t = ReadI32(in);
+                saw_physical_type = true;
                 (void)t; // We don't need physical type here, it's in column metadata
                 break;
             }
@@ -318,6 +314,12 @@ static SchemaElement ParseSchemaElement(TInput& in) {
                 break;
         }
     }
+
+    // Detect struct nodes: no physical type, has children, no logical_type
+    if (elem.num_children > 0 && !saw_physical_type && elem.logical_type.empty()) {
+        elem.logical_type = "struct";
+    }
+
     return elem;
 }
 
@@ -469,18 +471,48 @@ static inline bool EndsWith(const std::string& s, const char* suf) {
     return s.size() >= n && std::memcmp(s.data() + s.size() - n, suf, n) == 0;
 }
 
+
+static std::vector<SchemaElement> WalkSchema(TInput& in, int remaining,
+                                             const std::string& parent_path = "") {
+    std::vector<SchemaElement> nodes;
+    nodes.reserve(remaining);
+
+    for (int i = 0; i < remaining; i++) {
+        SchemaElement elem = ParseSchemaElement(in);
+        elem.name = parent_path.empty() ? elem.name : parent_path + "." + elem.name;
+
+        if (elem.num_children > 0) {
+            elem.children = WalkSchema(in, elem.num_children, elem.name);
+        }
+
+        nodes.push_back(std::move(elem));
+    }
+    return nodes;
+}
+
 // Walk schema tree recursively
-static void WalkSchema(TInput& in, int remaining,
+static void _WalkSchema(TInput& in, int remaining,
                        int indent,
                        std::string parent_path,
-                       std::unordered_map<std::string, std::string>& logical_type_map) {
+                       std::unordered_map<std::string, std::string>& logical_type_map,
+                       bool is_root = false) {
     for (int i = 0; i < remaining; i++) {
         SchemaElement elem = ParseSchemaElement(in);
 
         const std::string path = parent_path.empty() ? elem.name : parent_path + "." + elem.name;
 
-        // Collapse Parquet LIST encodings by name (no physical type required).
-        // Handle both canonical ".list.element" and legacy ".list.item".
+        // Skip printing/logging the root itself
+        if (!is_root) {
+            std::cerr << std::string(indent * 2, ' ') << "- " << path << " ("
+                      << (elem.logical_type.empty() ? "no_logical" : elem.logical_type)
+                      << (elem.type_length > 0 ? ", len=" + std::to_string(elem.type_length) : "")
+                      << (elem.precision > 0 ? ", prec=" + std::to_string(elem.precision) : "")
+                      << (elem.scale > 0 ? ", scale=" + std::to_string(elem.scale) : "")
+                      << (elem.num_children > 0 ? ", children=" + std::to_string(elem.num_children) : "")
+                      << ")\n";
+        }
+
+        // Collapse arrays
         if (EndsWith(path, ".list.element") || EndsWith(path, ".list.item")) {
             const char* suffix = EndsWith(path, ".list.element") ? ".list.element" : ".list.item";
             const std::size_t base_len = path.size() - std::strlen(suffix);
@@ -493,6 +525,21 @@ static void WalkSchema(TInput& in, int remaining,
             logical_type_map[base] = "array<" + child_logical + ">";
             logical_type_map[path] = "array<" + child_logical + ">";
 
+            // Skip traversing into list/item children
+            if (elem.num_children > 0) {
+                _WalkSchema(in, elem.num_children, indent + 1, path, logical_type_map);
+            }
+
+            continue; // don't recurse
+        }
+
+        // Collapse structs
+        if (elem.logical_type == "struct") {
+            logical_type_map[path] = "struct"; // later treat as JSONB
+            // consume children without emitting them
+            if (elem.num_children > 0) {
+                _WalkSchema(in, elem.num_children, indent + 1, path, logical_type_map, false);
+            }
             continue;
         }
 
@@ -514,8 +561,44 @@ static void WalkSchema(TInput& in, int remaining,
 
         // Recurse into children.
         if (elem.num_children > 0) {
-            WalkSchema(in, elem.num_children, indent + 1, path, logical_type_map);
+            _WalkSchema(in, elem.num_children, indent + 1, path, logical_type_map);
         }
+    }
+}
+
+static void InterpretSchema(const SchemaElement& elem,
+                            const std::string& parent_path,
+                            std::unordered_map<std::string, std::string>& out) {
+    // Build full path
+    const std::string path = parent_path.empty() ? elem.name : parent_path + "." + elem.name;
+
+    if (elem.logical_type == "struct") {
+        // collapse struct → JSONB
+        out[path] = "jsonb";
+        // stop: don't recurse into children for interpretation
+        return;
+    }
+
+    if (EndsWith(path, ".list.item") || EndsWith(path, ".list.element")) {
+        // collapse list semantics
+        std::string child_type = "unknown";
+        if (!elem.children.empty()) {
+            child_type = elem.children[0].logical_type.empty()
+                       ? "unknown"
+                       : elem.children[0].logical_type;
+        }
+        out[CanonicalizeColumnName(path)] = "array<" + child_type + ">";
+        // stop: don't recurse further into list internals
+        return;
+    }
+
+    if (!elem.logical_type.empty()) {
+        out[path] = elem.logical_type;
+    }
+
+    // Recurse into normal children
+    for (const auto& child : elem.children) {
+        InterpretSchema(child, path, out);
     }
 }
 
@@ -531,51 +614,16 @@ static FileStats ParseFileMeta(TInput& in) {
         switch (fh.id) {
             case 2: { // schema (list<SchemaElement>)
                 ReadListHeader(in);
-                WalkSchema(in, 1, 0, "", logical_type_map);
+                WalkSchema(in, 1);
                 break;
             }
             case 3: fs.num_rows = ReadI64(in); break;
-            case 4: { // row_groups
+            case 4: { // row_groups (list<RowGroup>)
                 auto lh = ReadListHeader(in);
+                fs.row_groups.reserve(lh.size);
                 for (uint32_t i = 0; i < lh.size; i++) {
                     RowGroupStats rg;
                     ParseRowGroup(in, rg);
-                    
-                    // Apply logical types to columns
-                    for (auto& col : rg.columns) {
-
-                        auto it = logical_type_map.find(col.name);
-                        if (it == logical_type_map.end()) {
-                            it = logical_type_map.find("schema." + col.name);
-                        }
-                        // Also try all keys that end with the column name (to handle different root names like "hive_schema")
-                        if (it == logical_type_map.end()) {
-                            for (const auto& pair : logical_type_map) {
-                                if (pair.first.size() > col.name.size() && 
-                                    pair.first.compare(pair.first.size() - col.name.size(), col.name.size(), col.name) == 0) {
-                                    // Check if it's a proper suffix (preceded by a dot)
-                                    if (pair.first[pair.first.size() - col.name.size() - 1] == '.') {
-                                        it = logical_type_map.find(pair.first);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        if (it != logical_type_map.end()) {
-                            col.logical_type = it->second;
-                        } else {
-                            // Infer common logical types from physical types when not explicitly defined
-                            if (col.physical_type == "int96") {
-                                col.logical_type = "timestamp[ns]"; // INT96 is usually timestamp
-                            } else if (col.physical_type == "byte_array") {
-                                // Default byte_array without logical type to binary
-                                col.logical_type = "binary";
-                            } else {
-                                col.logical_type = col.physical_type; // fallback to physical type
-                            }
-                        }
-                    }
-                    
                     fs.row_groups.push_back(std::move(rg));
                 }
                 break;
@@ -586,6 +634,51 @@ static FileStats ParseFileMeta(TInput& in) {
         }
     }
     return fs;
+}
+
+// Apply logical types from the schema map into row group column stats
+static void ApplyLogicalTypes(
+    FileStats& fs,
+    const std::unordered_map<std::string, std::string>& logical_type_map)
+{
+    for (auto& rg : fs.row_groups) {
+        for (auto& col : rg.columns) {
+            auto it = logical_type_map.find(col.name);
+
+            // Try with "schema." prefix
+            if (it == logical_type_map.end()) {
+                it = logical_type_map.find("schema." + col.name);
+            }
+
+            // Try suffix match (to handle root renames like "hive_schema")
+            if (it == logical_type_map.end()) {
+                for (const auto& pair : logical_type_map) {
+                    if (pair.first.size() > col.name.size() &&
+                        pair.first.compare(pair.first.size() - col.name.size(),
+                                           col.name.size(), col.name) == 0) {
+                        if (pair.first[pair.first.size() - col.name.size() - 1] == '.') {
+                            it = logical_type_map.find(pair.first);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Apply if found
+            if (it != logical_type_map.end()) {
+                col.logical_type = it->second;
+            } else {
+                // Fallback inference from physical types
+                if (col.physical_type == "int96") {
+                    col.logical_type = "timestamp[ns]"; // common INT96 convention
+                } else if (col.physical_type == "byte_array") {
+                    col.logical_type = "binary";
+                } else {
+                    col.logical_type = col.physical_type; // direct fallback
+                }
+            }
+        }
+    }
 }
 
 // ------------------- Entry point -------------------
@@ -609,7 +702,18 @@ FileStats ReadParquetMetadataFromBuffer(const uint8_t* buf, size_t size) {
     const uint8_t* footer_end   = buf + size - 8;
 
     TInput in{footer_start, footer_end};
-    return ParseFileMeta(in);
+    FileStats fs = ParseFileMeta(in);
+
+    // Now interpret schema to build logical type map§
+    std::unordered_map<std::string, std::string> logical_type_map;
+    for (auto& elem : fs.schema) {
+        InterpretSchema(elem, "", logical_type_map);
+    }
+
+    // Apply map to row group columns
+    ApplyLogicalTypes(fs, logical_type_map);
+
+    return fs;
 }
 
 // ------------------- Bloom Filter Implementation -------------------

@@ -27,9 +27,20 @@ struct RowGroupStats {
     std::vector<ColumnStats> columns;
 };
 
+struct SchemaElement {
+    std::string name;
+    std::string logical_type;
+    int num_children = 0;
+    int32_t type_length = 0;   // for FIXED_LEN_BYTE_ARRAY (e.g. flba5)
+    int32_t scale = 0;         // for DECIMAL
+    int32_t precision = 0;     // for DECIMAL
+    std::vector<SchemaElement> children;
+};
+
 struct FileStats {
     int64_t num_rows = 0;
     std::vector<RowGroupStats> row_groups;
+    std::vector<SchemaElement> schema;
 };
 
 FileStats ReadParquetMetadata(const std::string& path);
