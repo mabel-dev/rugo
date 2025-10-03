@@ -43,7 +43,7 @@ def _map_parquet_type_to_orso(
             return OrsoTypes.TIMESTAMP
 
         # JSON types
-        if logical_lower in ("json", "jsonb"):
+        if logical_lower in ("json", "jsonb", "struct"):
             return OrsoTypes.JSONB
 
         # Boolean types
@@ -130,7 +130,7 @@ def rugo_to_orso_schema(
                 continue  # Already processed this struct
             col_name = top_name
             physical_type = "struct"
-            logical_type = OrsoTypes.JSONB
+            logical_type = "jsonb"
             seen_structs.add(top_name)
 
         # Map to orso type
