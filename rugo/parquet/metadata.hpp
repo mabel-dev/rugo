@@ -13,12 +13,33 @@ struct ColumnStats {
     std::string name;             // joined path_in_schema: "a.b.c"
     std::string physical_type;    // e.g. "INT64", "BYTE_ARRAY"
     std::string logical_type;     // e.g. "STRING", "TIMESTAMP_MILLIS", "DECIMAL"
-    std::string min;              // min_value if present, else min (raw bytes)
-    std::string max;              // max_value if present, else max (raw bytes)
+
+    // Sizes & counts
+    int64_t num_values = -1;
+    int64_t total_uncompressed_size = -1;
+    int64_t total_compressed_size = -1;
+
+    // Offsets
+    int64_t data_page_offset = -1;
+    int64_t index_page_offset = -1;
+    int64_t dictionary_page_offset = -1;
+
+    // Statistics
+    std::string min;
+    std::string max;
     int64_t null_count = -1;
     int64_t distinct_count = -1;
+
+    // Bloom filter
     int64_t bloom_offset = -1;
     int64_t bloom_length = -1;
+
+    // Encodings & codec
+    std::vector<int32_t> encodings;
+    int32_t codec = -1;
+
+    // Raw key/value metadata (flattened for now)
+    std::unordered_map<std::string, std::string> key_value_metadata;
 };
 
 struct RowGroupStats {

@@ -115,16 +115,26 @@ def rugo_to_orso_schema(
         raise ValueError("Row group must contain 'columns' key")
 
     columns = []
+    seen_structs = set()
     for col_metadata in first_row_group["columns"]:
         if "name" not in col_metadata or "type" not in col_metadata:
             raise ValueError("Column metadata must contain 'name' and 'type' keys")
 
         col_name = col_metadata["name"]
-        parquet_type = col_metadata["type"]
+        physical_type = col_metadata["type"]
         logical_type = col_metadata.get("logical_type")
 
+        top_name = col_name.split(".", 1)[0]
+        if top_name != col_name:
+            if top_name in seen_structs:
+                continue  # Already processed this struct
+            col_name = top_name
+            physical_type = "struct"
+            logical_type = OrsoTypes.JSONB
+            seen_structs.add(top_name)
+
         # Map to orso type
-        orso_type = _map_parquet_type_to_orso(parquet_type, logical_type)
+        orso_type = _map_parquet_type_to_orso(physical_type, logical_type)
 
         # Create orso column
         orso_column = FlatColumn(

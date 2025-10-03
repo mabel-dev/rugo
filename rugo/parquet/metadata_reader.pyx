@@ -103,8 +103,6 @@ cdef object _read_metadata_common(const uint8_t* buf, size_t size):
     cdef metadata_reader.FileStats fs
     fs = metadata_reader.ReadParquetMetadataFromBuffer(buf, size)
 
-    print(fs.num_rows, sum(1 for _ in fs.row_groups))
-
     result = {
         "num_rows": fs.num_rows,
         "row_groups": []

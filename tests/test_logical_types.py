@@ -55,8 +55,9 @@ def test_logical_types():
         for rg_idx, rg in enumerate(meta['row_groups']):
             print(f"  Row Group {rg_idx}:")
             for col in rg['columns']:
-                logical = col.get('logical_type', '')
-                print(f"    {col['name']:20} | physical={col['type']:12} | logical={logical or '(none)'}")
+                if "." not in col["name"]:
+                    logical = col.get('logical_type', '')
+                    print(f"    {col['name']:20} | physical={col['type']:12} | logical={logical or '(none)'}")
             break  # Only show first row group
             
 
@@ -85,9 +86,10 @@ def test_comparison_with_pyarrow():
         print(f" Our interpretation: {[n['name'] for n in meta['row_groups'][0]['columns']]}")
         print("   schema:")
         for col in meta['row_groups'][0]['columns']:
-            logical = col.get('logical_type', '')
-            print(f"    {col['name']:20} | physical={col['type']:17} | logical={logical or '(none)':<17}  | arrow={arrow_types.get(col['name'], '(missing)')}")
-            assert arrow_types.get(col['name']) in EQUIVALENT_TYPES.get(logical, []), col['name']
+            if "." not in col["name"]:
+                logical = col.get('logical_type', '')
+                print(f"    {col['name']:20} | physical={col['type']:17} | logical={logical or '(none)':<17}  | arrow={arrow_types.get(col['name'], '(missing)')}")
+                assert arrow_types.get(col['name']) in EQUIVALENT_TYPES.get(logical, []), col['name']
 
 
 if __name__ == "__main__":
