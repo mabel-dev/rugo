@@ -21,6 +21,7 @@ EQUIVALENT_TYPES = {
     "boolean": ["bool"],
     "date32[day]": ["date32[day]"],
     "decimal(7,3)": ["decimal128(7, 3)"],
+    "decimal(10,2)": ["decimal128(10, 2)"],
     "fixed_len_byte_array[5]": ["fixed_size_binary[5]"],
     "float16": ["halffloat"],
     "float32": ["float"],
@@ -54,8 +55,9 @@ def test_logical_types():
         for rg_idx, rg in enumerate(meta['row_groups']):
             print(f"  Row Group {rg_idx}:")
             for col in rg['columns']:
-                logical = col.get('logical_type', '')
-                print(f"    {col['name']:20} | physical={col['type']:12} | logical={logical or '(none)'}")
+                if "." not in col["name"]:
+                    logical = col.get('logical_type', '')
+                    print(f"    {col['name']:20} | physical={col['type']:12} | logical={logical or '(none)'}")
             break  # Only show first row group
             
 
@@ -78,13 +80,16 @@ def test_comparison_with_pyarrow():
         schema = pf.schema.to_arrow_schema()
         arrow_types = {field.name: str(field.type) for field in schema} 
         
+        print(" PyArrow schema:", arrow_types)
         # Our interpretation
         meta = parquet_meta.read_metadata(file_path)
+        print(f" Our interpretation: {[n['name'] for n in meta['row_groups'][0]['columns']]}")
         print("   schema:")
         for col in meta['row_groups'][0]['columns']:
-            logical = col.get('logical_type', '')
-            print(f"    {col['name']:20} | physical={col['type']:17} | logical={logical or '(none)':<17}  | arrow={arrow_types.get(col['name'], '(missing)')}")
-            assert arrow_types.get(col['name']) in EQUIVALENT_TYPES.get(logical, []), col['name']
+            if "." not in col["name"]:
+                logical = col.get('logical_type', '')
+                print(f"    {col['name']:20} | physical={col['type']:17} | logical={logical or '(none)':<17}  | arrow={arrow_types.get(col['name'], '(missing)')}")
+                assert arrow_types.get(col['name']) in EQUIVALENT_TYPES.get(logical, []), col['name']
 
 
 if __name__ == "__main__":

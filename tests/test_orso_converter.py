@@ -40,7 +40,7 @@ class TestOrsoConverter:
         assert _map_parquet_type_to_orso("int32", "DATE") == OrsoTypes.DATE
         assert _map_parquet_type_to_orso("int64", "TIMESTAMP_MILLIS") == OrsoTypes.TIMESTAMP
         assert _map_parquet_type_to_orso("byte_array", "JSON") == OrsoTypes.JSONB
-        assert _map_parquet_type_to_orso("int32", "decimal (10,2)") == OrsoTypes.DECIMAL
+        assert _map_parquet_type_to_orso("int32", "DECIMAL(10,2)") == OrsoTypes.DECIMAL
     
     def test_converter_with_planets_data(self):
         """Test converting planets.parquet metadata to orso schema."""
@@ -141,7 +141,6 @@ class TestOrsoConverter:
         assert orso_schema.columns[0].type == OrsoTypes.INTEGER
         assert not orso_schema.columns[0].nullable  # null_count is 0
 
-
 @pytest.mark.skipif(ORSO_AVAILABLE, reason="Testing ImportError handling")
 def test_import_without_orso():
     """Test that the module handles missing orso gracefully."""
@@ -150,6 +149,30 @@ def test_import_without_orso():
     import rugo
     assert 'rugo_to_orso_schema' not in rugo.__all__
 
+
+def test_struct_handling():
+    cve_path = "tests/data/185d5a679a475304.parquet"
+    if not Path(cve_path).exists():
+        pytest.skip(f"Test file {cve_path} not found")
+    
+    rugo_metadata = parquet_meta.read_metadata(cve_path)
+    orso_schema = rugo_to_orso_schema(rugo_metadata, "cve_data")
+
+    assert isinstance(orso_schema, RelationSchema)
+    assert orso_schema.num_columns == 5  # Expecting 5 top-level columns due to struct handling
+    assert any(col.name == "configurations" and col.type == OrsoTypes.JSONB for col in orso_schema.columns)
+    assert any(col.name == "cve" and col.type == OrsoTypes.JSONB for col in orso_schema.columns)
+    assert any(col.name == "impact" and col.type == OrsoTypes.JSONB for col in orso_schema.columns)
+    assert any(col.name == "publishedDate" and col.type == OrsoTypes.VARCHAR for col in orso_schema.columns)
+    assert any(col.name == "lastModifiedDate" and col.type == OrsoTypes.VARCHAR for col in orso_schema.columns)
+
+def test_s_handling():
+    cve_path = "tests/data/185d5a679a475304.parquet"
+    if not Path(cve_path).exists():
+        pytest.skip(f"Test file {cve_path} not found")
+    
+    rugo_metadata = parquet_meta.read_metadata(cve_path)
+    print(rugo_metadata)
 
 if __name__ == "__main__":
     pytest.main([__file__])
