@@ -121,10 +121,34 @@ cdef object _read_metadata_common(const uint8_t* buf, size_t size):
 
             # Convert -1 to None for missing stats
             null_count = col.null_count if col.null_count >= 0 else None
+            distinct_count = col.distinct_count if col.distinct_count >= 0 else None
+            num_values = col.num_values if col.num_values >= 0 else None
+            total_uncompressed_size = col.total_uncompressed_size if col.total_uncompressed_size >= 0 else None
+            total_compressed_size = col.total_compressed_size if col.total_compressed_size >= 0 else None
+            data_page_offset = col.data_page_offset if col.data_page_offset >= 0 else None
+            index_page_offset = col.index_page_offset if col.index_page_offset >= 0 else None
+            dictionary_page_offset = col.dictionary_page_offset if col.dictionary_page_offset >= 0 else None
+            bloom_offset = col.bloom_offset if col.bloom_offset >= 0 else None
+            bloom_length = col.bloom_length if col.bloom_length >= 0 else None
 
             # Decode min/max, treating empty strings as None (no stats)
             min_val = decode_value(col.physical_type, col.logical_type, col.min) if col.min.size() > 0 else None
             max_val = decode_value(col.physical_type, col.logical_type, col.max) if col.max.size() > 0 else None
+
+            # Convert encodings to list of strings
+            encodings_list = []
+            for enc in col.encodings:
+                encodings_list.append(metadata_reader.EncodingToString(enc).decode("utf-8"))
+
+            # Convert codec to string
+            codec_str = None
+            if col.codec >= 0:
+                codec_str = metadata_reader.CompressionCodecToString(col.codec).decode("utf-8")
+
+            # Convert key_value_metadata to Python dict
+            kv_metadata = {}
+            for item in col.key_value_metadata:
+                kv_metadata[item.first.decode("utf-8")] = item.second.decode("utf-8")
 
             rg_dict["columns"].append({
                 "name": col.name.decode("utf-8"),
@@ -133,8 +157,18 @@ cdef object _read_metadata_common(const uint8_t* buf, size_t size):
                 "min": min_val,
                 "max": max_val,
                 "null_count": null_count,
-                "bloom_offset": col.bloom_offset,
-                "bloom_length": col.bloom_length,
+                "distinct_count": distinct_count,
+                "num_values": num_values,
+                "total_uncompressed_size": total_uncompressed_size,
+                "total_compressed_size": total_compressed_size,
+                "data_page_offset": data_page_offset,
+                "index_page_offset": index_page_offset,
+                "dictionary_page_offset": dictionary_page_offset,
+                "bloom_offset": bloom_offset,
+                "bloom_length": bloom_length,
+                "encodings": encodings_list,
+                "compression_codec": codec_str,
+                "key_value_metadata": kv_metadata if kv_metadata else None,
             })
         result["row_groups"].append(rg_dict)
     return result

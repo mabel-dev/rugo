@@ -86,6 +86,54 @@ static inline const char *LogicalTypeToString(int t) {
   }
 }
 
+const char *EncodingToString(int32_t enc) {
+  switch (enc) {
+  case 0:
+    return "PLAIN";
+  case 1:
+    return "PLAIN_DICTIONARY";
+  case 2:
+    return "RLE";
+  case 3:
+    return "BIT_PACKED";
+  case 4:
+    return "DELTA_BINARY_PACKED";
+  case 5:
+    return "DELTA_LENGTH_BYTE_ARRAY";
+  case 6:
+    return "DELTA_BYTE_ARRAY";
+  case 7:
+    return "RLE_DICTIONARY";
+  case 8:
+    return "BYTE_STREAM_SPLIT";
+  default:
+    return "UNKNOWN";
+  }
+}
+
+const char *CompressionCodecToString(int32_t codec) {
+  switch (codec) {
+  case 0:
+    return "UNCOMPRESSED";
+  case 1:
+    return "SNAPPY";
+  case 2:
+    return "GZIP";
+  case 3:
+    return "LZO";
+  case 4:
+    return "BROTLI";
+  case 5:
+    return "LZ4";
+  case 6:
+    return "ZSTD";
+  case 7:
+    return "LZ4_RAW";
+  default:
+    return "UNKNOWN";
+  }
+}
+
 static inline std::string CanonicalizeColumnName(std::string name) {
   if (name.rfind("schema.", 0) == 0) {
     name.erase(0, 7); // strip schema.
