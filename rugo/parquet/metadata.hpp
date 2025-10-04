@@ -71,6 +71,10 @@ inline FileStats ReadParquetMetadataC(const char *path) {
   return ReadParquetMetadata(std::string(path));
 }
 
+// Helper functions to convert enums to strings
+const char *EncodingToString(int32_t enc);
+const char *CompressionCodecToString(int32_t codec);
+
 // New functions for bloom filter testing
 bool TestBloomFilter(const std::string &file_path, int64_t bloom_offset,
                      int64_t bloom_length, const std::string &value);

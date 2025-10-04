@@ -179,9 +179,19 @@ The `read_metadata()` function returns a dictionary with the following structure
                     "logical_type": str,   # Logical type (STRING, TIMESTAMP_MILLIS, etc.)
                     "min": any,            # Minimum value (decoded)
                     "max": any,            # Maximum value (decoded)
-                    "null_count": int,     # Number of null values
-                    "bloom_offset": int,   # Bloom filter offset (-1 if none)
-                    "bloom_length": int,   # Bloom filter length (-1 if none)
+                    "null_count": int,     # Number of null values (None if not available)
+                    "distinct_count": int, # Number of distinct values (None if not available)
+                    "num_values": int,     # Total number of values (None if not available)
+                    "total_uncompressed_size": int,  # Uncompressed data size in bytes
+                    "total_compressed_size": int,    # Compressed data size in bytes
+                    "data_page_offset": int,         # Offset to data pages
+                    "index_page_offset": int,        # Offset to index pages (None if none)
+                    "dictionary_page_offset": int,   # Offset to dictionary pages (None if none)
+                    "bloom_offset": int,   # Bloom filter offset (None if none)
+                    "bloom_length": int,   # Bloom filter length (None if none)
+                    "encodings": [str],    # List of encodings used (e.g., ["PLAIN", "RLE"])
+                    "compression_codec": str,  # Compression codec (e.g., "SNAPPY", "GZIP")
+                    "key_value_metadata": dict,  # Custom key-value metadata (None if none)
                 }
             ]
         }
