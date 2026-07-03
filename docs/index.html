@@ -1030,17 +1030,17 @@ csv_bytes = csv.<span class="f">write_csv</span>(morsel)</pre>
                     <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem">
                         Inferred types: <code>int64</code>, <code>float64</code>, <code>bool</code>, <code>str</code>, <code>bytes</code>, <code>null</code>, <code>array[T]</code>.
                     </p>
-                    <h3 style="margin-bottom:0.75rem">Performance vs PyArrow — 116 MB, 1.5M rows, 5 cols (PyArrow multithreaded)</h3>
+                    <h3 style="margin-bottom:0.75rem">Performance vs PyArrow — 1M rows, 105 cols, 2.3 GB (best of 5 runs, PyArrow multithreaded)</h3>
                     <table class="perf-table" style="margin-bottom:0.5rem">
                         <thead><tr><th>Query shape</th><th>Rugo</th><th>PyArrow</th></tr></thead>
                         <tbody>
-                            <tr><td>SELECT *</td><td>~67 ms</td><td>~53 ms</td></tr>
-                            <tr><td>SELECT 1 col</td><td class="win">~33 ms</td><td class="lose">~53 ms</td></tr>
-                            <tr><td>WHERE ~10% pass</td><td class="win">~15 ms</td><td class="lose">~53 ms</td></tr>
-                            <tr><td>WHERE ~1% pass</td><td class="win">~7 ms</td><td class="lose">~53 ms</td></tr>
+                            <tr><td>SELECT *</td><td class="win">~1.09 s</td><td class="lose">~1.38 s</td></tr>
+                            <tr><td>SELECT 1 col</td><td class="win">~215 ms</td><td class="lose">~1.4 s</td></tr>
+                            <tr><td>WHERE ~10% pass</td><td class="win">~146 ms</td><td class="lose">~1.84 s</td></tr>
+                            <tr><td>WHERE ~1% pass</td><td class="win">~145 ms</td><td class="lose">~1.83 s</td></tr>
                         </tbody>
                     </table>
-                    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:1.5rem">Advantage grows with selectivity — PyArrow reads all columns regardless of projection.</p>
+                    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:1.5rem">Advantage grows with selectivity — PyArrow reads and decodes every column on every query, regardless of projection or filter. On a wide, real-world row shape, even <code>SELECT *</code> favors Rugo.</p>
                     <pre><span class="k">from</span> rugo <span class="k">import</span> jsonl
 
 <span class="c"># Schema without reading all data</span>
