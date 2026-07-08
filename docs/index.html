@@ -592,7 +592,8 @@
         <nav>
             <span class="nav-logo">ru<span>go</span></span>
             <div class="nav-links">
-                <a href="#why">Why Rugo</a>
+                <a href="#why">Philosophy</a>
+                <a href="#built-for">Built&nbsp;for</a>
                 <a href="#formats">Formats</a>
                 <a href="#quickstart">Quickstart</a>
                 <a href="#data-model">Data&nbsp;Model</a>
@@ -662,11 +663,12 @@
                     >
                 </h1>
                 <p class="hero-sub">
-                    Rugo is the file layer extracted from the
-                    <a href="https://opteryx.app/">Opteryx</a> SQL engine. It
-                    was built to keep memory use low by pushing filters as early
-                    as possible — skipping columns you don't need and pruning
-                    row groups before any data is decoded.
+                    Traditional libraries optimise decoding speed. Rugo
+                    optimises reading less data in the first place — pushing
+                    column projection and predicate pushdown ahead of decode,
+                    so data you don't want is never touched. Extracted from
+                    years of work on the
+                    <a href="https://opteryx.app/">Opteryx</a> SQL engine.
                 </p>
                 <div class="hero-ctas">
                     <a class="btn-primary" href="#quickstart">Get started</a>
@@ -700,16 +702,22 @@
         <!-- ── WHY ── -->
         <section id="why">
             <div class="container">
-                <div class="section-label">Why Rugo</div>
-                <h2>Thin by design. Opinionated about what not to load.</h2>
+                <div class="section-label">Philosophy</div>
+                <h2>Performance doesn't only come from decoding faster.</h2>
                 <p class="section-intro">
-                    Rugo was built as the file layer for the
-                    <a href="https://opteryx.app/">Opteryx</a> SQL engine, where
-                    the constraint was simple: read as little data as possible,
-                    hold as little in memory as possible. Column projection and
-                    row-group pruning happen before any decoding. The result is
-                    a library that is fast on selective queries, tiny on disk,
-                    and carries no PyArrow, Pandas, or NumPy into your
+                    Often it comes from avoiding decoding data you don't need
+                    in the first place. Rugo was built as the file layer for
+                    the <a href="https://opteryx.app/">Opteryx</a> SQL engine,
+                    where the goals were simple: read as little data as
+                    possible, hold as little in memory as possible. Column
+                    projection and row-group pruning happen
+                    <em style="font-style: normal; color: var(--text)"
+                        >before</em
+                    >
+                    any decoding — so the columns and rows a query doesn't
+                    need are never paid for. The result is a library that gets
+                    faster the more selective your query is, stays tiny on
+                    disk, and carries no PyArrow, Pandas, or NumPy into your
                     environment.
                 </p>
 
@@ -752,39 +760,39 @@
                         color: var(--muted);
                     "
                 >
-                    Measured on Python 3.14t, Apple M-series. Import times on a
-                    cold process (first load off disk).
+                    Measured with Rugo 0.4.0 on Python 3.14t, Apple M-series.
+                    Import times on a cold process (first load off disk).
                 </p>
 
                 <div class="feature-grid" style="margin-top: 3rem">
                     <div class="feature-card">
                         <div class="feature-icon">⚡</div>
-                        <h3>Serverless-first</h3>
+                        <h3>Faster cold starts</h3>
                         <p style="color: var(--muted); font-size: 0.9rem">
                             AWS Lambda and GCP Cloud Functions bill by memory
-                            and package size. At 17 MB installed and a 5 ms
-                            cold import, rugo fits where PyArrow's 124 MB
-                            footprint doesn't.
+                            and package size. A 5 ms cold import versus
+                            PyArrow's 29 ms adds up fast at scale-out.
                         </p>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon">📦</div>
-                        <h3>Tiny container images</h3>
+                        <h3>Smaller packages &amp; images</h3>
                         <p style="color: var(--muted); font-size: 0.9rem">
-                            At 16× smaller than PyArrow, rugo meaningfully
-                            shrinks image size, speeds scale-out, and keeps you
-                            well clear of AWS Lambda's 250 MB unzipped layer
-                            limit.
+                            At 16× smaller than PyArrow, rugo shrinks Lambda
+                            deployment packages and container images, speeds
+                            up deploys, and stays well clear of AWS Lambda's
+                            250 MB unzipped layer limit.
                         </p>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon">🔍</div>
-                        <h3>Read less, go faster</h3>
+                        <h3>Lower memory, more selectivity</h3>
                         <p style="color: var(--muted); font-size: 0.9rem">
                             Column projection and row-group pruning are
                             first-class citizens. Skip the columns you don't
-                            need. Skip the row groups that can't match. Rugo's
-                            advantage grows with selectivity.
+                            need. Skip the row groups that can't match. The
+                            more selective the query, the bigger rugo's
+                            advantage.
                         </p>
                     </div>
                     <div class="feature-card">
@@ -811,10 +819,56 @@
                     <strong style="color: var(--text)"
                         >Where PyArrow is faster:</strong
                     >
-                    full-table scans with no filtering. Rugo does not compete
-                    on decode throughput — it competes on how little it has to
-                    decode in the first place.
+                    full-table scans with no filtering. PyArrow's Parquet
+                    engine has had over a decade of optimisation poured into
+                    raw decode throughput — Rugo doesn't compete there. It
+                    competes on how little it has to decode in the first
+                    place.
                 </p>
+            </div>
+        </section>
+
+        <!-- ── BUILT FOR ── -->
+        <section id="built-for">
+            <div class="container">
+                <div class="section-label">Built for</div>
+                <h2>A different niche, not a smaller PyArrow.</h2>
+                <p class="section-intro">
+                    Rugo is the file layer for applications that read data
+                    selectively rather than scan it wholesale — places where
+                    footprint, cold-start time, and memory matter as much as
+                    throughput.
+                </p>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🧮</div>
+                        <h3>SQL engines</h3>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>Embedded analytics</h3>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Serverless data processing</h3>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🤖</div>
+                        <h3>AI / RAG preprocessing</h3>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📦</div>
+                        <h3>Containers</h3>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⌨️</div>
+                        <h3>CLI tools</h3>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🪶</div>
+                        <h3>Low-memory data applications</h3>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -1141,6 +1195,51 @@ values = vec.<span class="f">to_pylist</span>()  <span class="c"># ["Mercury", "
         csv_bytes   = <span class="f">write_csv</span>(morsel)
         jsonl_bytes = <span class="f">write_jsonl</span>(morsel)
         pq_bytes    = parquet.<span class="f">write_parquet</span>(morsel)</pre>
+            </div>
+        </section>
+
+        <!-- ── CLOSING ── -->
+        <section id="closing" style="padding: 4rem 0">
+            <div class="container">
+                <p
+                    style="
+                        font-size: 1.5rem;
+                        font-weight: 700;
+                        letter-spacing: -0.02em;
+                        line-height: 1.4;
+                        max-width: 640px;
+                    "
+                >
+                    Rugo isn't designed to decode data faster.<br />
+                    <em
+                        style="
+                            font-style: normal;
+                            background: linear-gradient(
+                                90deg,
+                                var(--accent),
+                                var(--accent2)
+                            );
+                            -webkit-background-clip: text;
+                            -webkit-text-fill-color: transparent;
+                            background-clip: text;
+                        "
+                        >It's designed to avoid decoding data you don't
+                        need.</em
+                    >
+                </p>
+                <p
+                    style="
+                        margin-top: 1.25rem;
+                        font-size: 1rem;
+                        color: var(--muted);
+                        max-width: 560px;
+                    "
+                >
+                    Rugo was born out of <a href="https://opteryx.app/"
+                        >Opteryx</a
+                    >'s need for a fast, low-memory Parquet reader — thin by
+                    design, and opinionated about what not to load.
+                </p>
             </div>
         </section>
 
