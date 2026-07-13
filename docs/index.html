@@ -922,6 +922,20 @@ meta = jsonl.<span class="f">read_metadata</span>(<span class="s">"events.jsonl"
 data = jsonl.<span class="f">write_jsonl</span>(morsel)</pre>
 
                 <p style="margin-top: 1.5rem">
+                    The same install also puts a <code>rugo</code> command on your
+                    <code>PATH</code> — the reader and writer, driven from the shell.
+                </p>
+
+                <pre style="margin-top: 1rem"><span class="c"># Inspect, convert, and reshape files without writing any Python</span>
+<span class="f">rugo</span> info events.parquet              <span class="c"># rows, columns, size, format</span>
+<span class="f">rugo</span> schema events.parquet            <span class="c"># column names, types, nullability</span>
+<span class="f">rugo</span> preview -n 5 events.parquet       <span class="c"># first rows as a table</span>
+<span class="f">rugo</span> convert events.parquet events.jsonl   <span class="c"># format inferred from extensions</span>
+
+<span class="c"># Every verb takes --json, so it composes with jq and shell pipelines</span>
+<span class="f">rugo</span> count --json events.parquet | jq .num_rows</pre>
+
+                <p style="margin-top: 1.5rem">
                     A complete worked example on a real dataset is available in
                     <a href="https://colab.research.google.com/drive/1EQeN0xB53sFZVOQ_MZiW4-W5-skW3WaX?usp=sharing">Google Colab</a>
                     or as a
