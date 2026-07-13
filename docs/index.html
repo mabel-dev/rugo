@@ -887,7 +887,16 @@
                     <code>pip install rugo</code>
                 </div>
 
-                <pre><span class="k">from</span> rugo <span class="k">import</span> parquet
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('python')">
+                        Python API
+                    </button>
+                    <button class="tab" onclick="showTab('cli')">CLI</button>
+                </div>
+
+                <!-- PYTHON API -->
+                <div id="tab-python" class="tab-pane active">
+                    <pre><span class="k">from</span> rugo <span class="k">import</span> parquet
 
 <span class="c"># Read — context manager, yields Morsels</span>
 <span class="k">with</span> parquet.<span class="f">read_parquet</span>(<span class="s">"planets.parquet"</span>, columns=[<span class="s">"id"</span>, <span class="s">"name"</span>], predicates=[(<span class="s">"id"</span>, <span class="s">">"</span>, <span class="n">4</span>)]) <span class="k">as</span> reader:
@@ -901,7 +910,7 @@ meta = parquet.<span class="f">read_metadata</span>(<span class="s">"planets.par
 <span class="c"># Write</span>
 data = parquet.<span class="f">write_parquet</span>(morsel, compression=<span class="s">"zstd"</span>)</pre>
 
-                <pre style="margin-top: 1rem"><span class="k">from</span> rugo <span class="k">import</span> csv
+                    <pre style="margin-top: 1rem"><span class="k">from</span> rugo <span class="k">import</span> csv
 
 <span class="c"># Same shape — context manager, yields Morsels</span>
 <span class="k">with</span> csv.<span class="f">read_csv</span>(<span class="s">"data.csv"</span>, columns=[<span class="s">"name"</span>], predicates=[(<span class="s">"age"</span>, <span class="s">">"</span>, <span class="n">30</span>)]) <span class="k">as</span> reader:
@@ -911,7 +920,7 @@ data = parquet.<span class="f">write_parquet</span>(morsel, compression=<span cl
 meta = csv.<span class="f">read_metadata</span>(<span class="s">"data.csv"</span>)
 data = csv.<span class="f">write_csv</span>(morsel)</pre>
 
-                <pre style="margin-top: 1rem"><span class="k">from</span> rugo <span class="k">import</span> jsonl
+                    <pre style="margin-top: 1rem"><span class="k">from</span> rugo <span class="k">import</span> jsonl
 
 <span class="c"># Same shape again</span>
 <span class="k">with</span> jsonl.<span class="f">read_jsonl</span>(<span class="s">"events.jsonl"</span>, columns=[<span class="s">"id"</span>, <span class="s">"status"</span>], predicates=[(<span class="s">"status"</span>, <span class="s">"=="</span>, <span class="s">"active"</span>)]) <span class="k">as</span> reader:
@@ -920,20 +929,32 @@ data = csv.<span class="f">write_csv</span>(morsel)</pre>
 
 meta = jsonl.<span class="f">read_metadata</span>(<span class="s">"events.jsonl"</span>)
 data = jsonl.<span class="f">write_jsonl</span>(morsel)</pre>
+                </div>
 
-                <p style="margin-top: 1.5rem">
-                    The same install also puts a <code>rugo</code> command on your
-                    <code>PATH</code> — the reader and writer, driven from the shell.
-                </p>
+                <!-- CLI -->
+                <div id="tab-cli" class="tab-pane">
+                    <p style="margin-bottom: 1rem">
+                        The same install puts a <code>rugo</code> command on your
+                        <code>PATH</code> — the reader and writer, driven from the
+                        shell. Inspect, convert, and reshape files without writing
+                        any Python.
+                    </p>
 
-                <pre style="margin-top: 1rem"><span class="c"># Inspect, convert, and reshape files without writing any Python</span>
+                    <pre><span class="c"># Look at a file</span>
 <span class="f">rugo</span> info events.parquet              <span class="c"># rows, columns, size, format</span>
 <span class="f">rugo</span> schema events.parquet            <span class="c"># column names, types, nullability</span>
 <span class="f">rugo</span> preview -n 5 events.parquet       <span class="c"># first rows as a table</span>
-<span class="f">rugo</span> convert events.parquet events.jsonl   <span class="c"># format inferred from extensions</span>
+<span class="f">rugo</span> describe events.parquet          <span class="c"># per-column null counts, min/max</span></pre>
 
-<span class="c"># Every verb takes --json, so it composes with jq and shell pipelines</span>
+                    <pre style="margin-top: 1rem"><span class="c"># Reshape and move data between formats</span>
+<span class="f">rugo</span> convert events.parquet events.jsonl   <span class="c"># format inferred from extensions</span>
+<span class="f">rugo</span> merge part-*.parquet all.parquet      <span class="c"># concatenate schema-identical files</span>
+<span class="f">rugo</span> split --rows 100000 big.parquet       <span class="c"># chunk into smaller files</span>
+<span class="f">rugo</span> diff before.parquet after.parquet     <span class="c"># schema differences</span></pre>
+
+                    <pre style="margin-top: 1rem"><span class="c"># Every verb takes --json, so it composes with jq and shell pipelines</span>
 <span class="f">rugo</span> count --json events.parquet | jq .num_rows</pre>
+                </div>
 
                 <p style="margin-top: 1.5rem">
                     A complete worked example on a real dataset is available in
@@ -1369,14 +1390,18 @@ values = vec.<span class="f">to_pylist</span>()  <span class="c"># ["Mercury", "
                 .catch(() => {});
 
             function showTab(name) {
-                document
+                // Scope to the clicked button's section so independent tab
+                // groups (Quickstart, Formats) don't clear each other.
+                const btn = event.target;
+                const scope = btn.closest("section") || document;
+                scope
                     .querySelectorAll(".tab")
                     .forEach((t) => t.classList.remove("active"));
-                document
+                scope
                     .querySelectorAll(".tab-pane")
                     .forEach((p) => p.classList.remove("active"));
                 document.getElementById("tab-" + name).classList.add("active");
-                event.target.classList.add("active");
+                btn.classList.add("active");
             }
         </script>
     </body>
