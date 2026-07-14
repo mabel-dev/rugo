@@ -6,7 +6,7 @@
         <title>Rugo — Fast, dependency-free Parquet engine for Python</title>
         <meta
             name="description"
-            content="Rugo reads and writes Parquet, CSV, and JSONL from Python. No PyArrow, no Pandas, no NumPy. Thin, opinionated for low resource usage. 17 MB installed. 5 ms import."
+            content="Rugo reads and writes Parquet, CSV, and JSONL from Python. No PyArrow, no Pandas, no NumPy. Thin, opinionated for low resource usage. 7.7 MB installed. 7 ms import."
         />
         <link rel="icon" type="image/svg+xml" href="favicon.svg" />
         <style>
@@ -680,15 +680,15 @@
                 </div>
                 <div class="hero-stats">
                     <div class="stat">
-                        <div class="stat-val"><em>5 ms</em></div>
+                        <div class="stat-val"><em>7 ms</em></div>
                         <div class="stat-label">
-                            cold import (PyArrow: 29 ms)
+                            cold import (PyArrow: 27 ms)
                         </div>
                     </div>
                     <div class="stat">
-                        <div class="stat-val"><em>17 MB</em></div>
+                        <div class="stat-val"><em>7.7 MB</em></div>
                         <div class="stat-label">
-                            installed footprint (PyArrow: 124 MB)
+                            installed footprint (PyArrow: 126 MB)
                         </div>
                     </div>
                     <div class="stat">
@@ -732,8 +732,8 @@
                     <tbody>
                         <tr>
                             <td>Installed footprint</td>
-                            <td class="win">17 MB</td>
-                            <td class="lose">124 MB</td>
+                            <td class="win">7.7 MB</td>
+                            <td class="lose">126 MB</td>
                         </tr>
                         <tr>
                             <td>Runtime dependencies</td>
@@ -742,13 +742,13 @@
                         </tr>
                         <tr>
                             <td>Cold import time</td>
-                            <td class="win">5 ms</td>
-                            <td class="lose">29 ms</td>
+                            <td class="win">7 ms</td>
+                            <td class="lose">27 ms</td>
                         </tr>
                         <tr>
                             <td>Schema read (footer only)</td>
                             <td class="win">0.02 ms</td>
-                            <td class="lose">0.05 ms</td>
+                            <td class="lose">0.03 ms</td>
                         </tr>
                     </tbody>
                 </table>
@@ -760,8 +760,11 @@
                         color: var(--muted);
                     "
                 >
-                    Measured with Rugo 0.4.0 on Python 3.14t, Apple M-series.
-                    Import times on a cold process (first load off disk).
+                    Measured with Rugo 0.4.10 and PyArrow 25.0.0 on Python
+                    3.14.5t, Apple M-series (macOS arm64 wheels). Import times
+                    on a cold process (first load off disk), best of 10.
+                    Footprint is the on-disk size of the installed package;
+                    neither library pulls a runtime dependency.
                 </p>
 
                 <div class="feature-grid" style="margin-top: 3rem">
@@ -770,8 +773,8 @@
                         <h3>Faster cold starts</h3>
                         <p style="color: var(--muted); font-size: 0.9rem">
                             AWS Lambda and GCP Cloud Functions bill by memory
-                            and package size. A 5 ms cold import versus
-                            PyArrow's 29 ms adds up fast at scale-out.
+                            and package size. A 7 ms cold import versus
+                            PyArrow's 27 ms adds up fast at scale-out.
                         </p>
                     </div>
                     <div class="feature-card">
