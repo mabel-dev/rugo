@@ -1018,6 +1018,11 @@ data = jsonl.<span class="f">write_jsonl</span>(morsel)</pre>
                             <div><dt><code>bloom_filters: bool | list[str]</code></dt><dd>True = all eligible cols; False = none; list = named cols only</dd></div>
                             <div><dt><code>max_rows_per_row_group: int</code></dt><dd>pass <code>0</code> for a single row group</dd></div>
                         </dl>
+                        <div class="api-fn"><code>open_parquet_writer(sink, compression, bloom_filters)</code> <span class="api-ret">→ context manager, constant-memory streaming write</span></div>
+                        <dl class="api-params">
+                            <div><dt><code>sink: callable</code></dt><dd>called with each chunk of bytes as row groups are written</dd></div>
+                            <div><dt><code>writer.write_row_group(morsel)</code></dt><dd>one parquet row group per call; same schema across calls</dd></div>
+                        </dl>
                     </div>
                     <p style="font-size:0.85rem;color:var(--muted);margin-bottom:0.6rem">
                         <strong style="color:var(--text)">Decode:</strong>
@@ -1049,7 +1054,13 @@ meta = parquet.<span class="f">read_metadata</span>(<span class="s">"planets.par
 <span class="c"># Write (ZSTD default)</span>
 data = parquet.<span class="f">write_parquet</span>(morsel)
 <span class="k">with</span> <span class="f">open</span>(<span class="s">"out.parquet"</span>, <span class="s">"wb"</span>) <span class="k">as</span> f:
-    f.<span class="f">write</span>(data)</pre>
+    f.<span class="f">write</span>(data)
+
+<span class="c"># Stream batches at constant memory — one row group per call</span>
+<span class="k">with</span> <span class="f">open</span>(<span class="s">"out.parquet"</span>, <span class="s">"wb"</span>) <span class="k">as</span> f:
+    <span class="k">with</span> parquet.<span class="f">open_parquet_writer</span>(f.write) <span class="k">as</span> writer:
+        <span class="k">for</span> batch <span class="k">in</span> batches:
+            writer.<span class="f">write_row_group</span>(batch)</pre>
                 </div>
 
                 <!-- CSV -->
