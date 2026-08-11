@@ -6,7 +6,7 @@
         <title>Rugo — Fast, dependency-free Parquet engine for Python</title>
         <meta
             name="description"
-            content="Rugo reads and writes Parquet, CSV, and JSONL from Python. No PyArrow, no Pandas, no NumPy. Thin, opinionated for low resource usage. 7.7 MB installed. 7 ms import."
+            content="Rugo reads and writes Parquet, CSV, and JSONL from Python. No PyArrow, no Pandas, no NumPy. Thin, opinionated for low resource usage. 2.7 MB installed. 7 ms import."
         />
         <link rel="icon" type="image/svg+xml" href="favicon.svg" />
         <style>
@@ -686,9 +686,9 @@
                         </div>
                     </div>
                     <div class="stat">
-                        <div class="stat-val"><em>7.7 MB</em></div>
+                        <div class="stat-val"><em>2.7 MB</em></div>
                         <div class="stat-label">
-                            installed footprint (PyArrow: 126 MB)
+                            installed footprint (PyArrow: 131 MB)
                         </div>
                     </div>
                     <div class="stat">
@@ -732,8 +732,8 @@
                     <tbody>
                         <tr>
                             <td>Installed footprint</td>
-                            <td class="win">7.7 MB</td>
-                            <td class="lose">126 MB</td>
+                            <td class="win">2.7 MB</td>
+                            <td class="lose">131 MB</td>
                         </tr>
                         <tr>
                             <td>Runtime dependencies</td>
@@ -760,8 +760,8 @@
                         color: var(--muted);
                     "
                 >
-                    Measured with Rugo 0.4.10 and PyArrow 25.0.0 on Python
-                    3.14.5t, Apple M-series (macOS arm64 wheels). Import times
+                    Measured with Rugo 0.4.29 and PyArrow 25.0.1 on Python
+                    3.14.5, Apple M-series (macOS arm64 wheels). Import times
                     on a cold process (first load off disk), best of 10.
                     Footprint is the on-disk size of the installed package;
                     neither library pulls a runtime dependency.
@@ -781,7 +781,7 @@
                         <div class="feature-icon">📦</div>
                         <h3>Smaller packages &amp; images</h3>
                         <p style="color: var(--muted); font-size: 0.9rem">
-                            At 16× smaller than PyArrow, rugo shrinks Lambda
+                            At 48× smaller than PyArrow, rugo shrinks Lambda
                             deployment packages and container images, speeds
                             up deploys, and stays well clear of AWS Lambda's
                             250 MB unzipped layer limit.
@@ -1088,14 +1088,14 @@ data = parquet.<span class="f">write_parquet</span>(morsel)
                     <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem">
                         Type inference: <code>int64</code> → <code>float64</code> → <code>VARCHAR</code> → <code>null</code>.
                     </p>
-                    <h3 style="margin-bottom:0.75rem">Performance vs PyArrow — wide file (50 cols, 200k rows, 55 MB)</h3>
+                    <h3 style="margin-bottom:0.75rem">Performance vs PyArrow — wide file (50 cols, 200k rows, 67 MB)</h3>
                     <table class="perf-table" style="margin-bottom:0.5rem">
                         <thead><tr><th>Query shape</th><th>Rugo</th><th>PyArrow</th></tr></thead>
                         <tbody>
-                            <tr><td>SELECT *</td><td>~26 ms</td><td>~17 ms</td></tr>
-                            <tr><td>SELECT 2 cols</td><td class="win">~9 ms</td><td class="lose">~7 ms</td></tr>
-                            <tr><td>WHERE P90 (~10% pass)</td><td class="win">~13 ms</td><td class="lose">~27 ms</td></tr>
-                            <tr><td>WHERE P99 (~1% pass)</td><td class="win">~10 ms</td><td class="lose">~23 ms</td></tr>
+                            <tr><td>SELECT *</td><td>~23 ms</td><td>~21 ms</td></tr>
+                            <tr><td>SELECT 2 cols</td><td>~8 ms</td><td>~8 ms</td></tr>
+                            <tr><td>WHERE P90 (~10% pass)</td><td class="win">~11 ms</td><td class="lose">~22 ms</td></tr>
+                            <tr><td>WHERE P99 (~1% pass)</td><td class="win">~9 ms</td><td class="lose">~21 ms</td></tr>
                         </tbody>
                     </table>
                     <p style="font-size:0.8rem;color:var(--muted);margin-bottom:1.5rem">On narrow files PyArrow is faster across the board — the crossover is driven by how many columns can be skipped and how many rows are eliminated before the typed column build.</p>
@@ -1143,14 +1143,14 @@ csv_bytes = csv.<span class="f">write_csv</span>(morsel)</pre>
                     <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem">
                         Inferred types: <code>int64</code>, <code>float64</code>, <code>bool</code>, <code>str</code>, <code>bytes</code>, <code>null</code>, <code>array[T]</code>.
                     </p>
-                    <h3 style="margin-bottom:0.75rem">Performance vs PyArrow — 1M rows, 105 cols, 2.3 GB (best of 5 runs, PyArrow multithreaded)</h3>
+                    <h3 style="margin-bottom:0.75rem">Performance vs PyArrow — 1M rows, 110 cols, 2.7 GB (best of 3 runs, PyArrow multithreaded)</h3>
                     <table class="perf-table" style="margin-bottom:0.5rem">
                         <thead><tr><th>Query shape</th><th>Rugo</th><th>PyArrow</th></tr></thead>
                         <tbody>
-                            <tr><td>SELECT *</td><td class="win">~1.09 s</td><td class="lose">~1.38 s</td></tr>
-                            <tr><td>SELECT 1 col</td><td class="win">~215 ms</td><td class="lose">~1.4 s</td></tr>
-                            <tr><td>WHERE ~10% pass</td><td class="win">~146 ms</td><td class="lose">~1.84 s</td></tr>
-                            <tr><td>WHERE ~1% pass</td><td class="win">~145 ms</td><td class="lose">~1.83 s</td></tr>
+                            <tr><td>SELECT *</td><td class="win">~1.40 s</td><td class="lose">~1.52 s</td></tr>
+                            <tr><td>SELECT 1 col</td><td class="win">~166 ms</td><td class="lose">~1.53 s</td></tr>
+                            <tr><td>WHERE ~10% pass</td><td class="win">~160 ms</td><td class="lose">~1.72 s</td></tr>
+                            <tr><td>WHERE ~1% pass</td><td class="win">~160 ms</td><td class="lose">~1.72 s</td></tr>
                         </tbody>
                     </table>
                     <p style="font-size:0.8rem;color:var(--muted);margin-bottom:1.5rem">Advantage grows with selectivity — PyArrow reads and decodes every column on every query, regardless of projection or filter. On a wide, real-world row shape, even <code>SELECT *</code> favors Rugo.</p>
