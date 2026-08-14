@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>
+            Analysing 1 GB of JSONL logs in Python: grep vs pandas vs rugo
+        </title>
+        <meta
+            name="description"
+            content="Rolling response-time stats over 1 GB of JSONL traffic logs, three ways. pandas needed 2,500 MB of RAM. rugo needed 5 MB. All three returned the same 899,041 rows."
+        />
+        <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+        <link rel="stylesheet" href="../blog.css" />
+    </head>
+    <body>
+        <nav>
+            <a class="nav-logo" href="../index.html">ru<span>go</span></a>
+            <div class="nav-links">
+                <a href="../index.html">Home</a>
+                <a href="index.html">Blog</a>
+                <a href="https://github.com/mabel-dev/opteryx-core/tree/main/rugo"
+                    >Docs</a
+                >
+            </div>
+        </nav>
+
+        <article>
+            <div class="container">
+                <header class="post-header">
+                    <h1>
+                        Analysing 1 GB of JSONL logs in Python: grep vs pandas
+                        vs rugo
+                    </h1>
+                    <p class="post-meta">
+                        Justin Joyce <span class="sep">·</span> 10 July 2026
+                        <span class="sep">·</span> 8 min read
+                    </p>
+                    <div class="post-tags">
+                        <span>jsonl</span>
+                        <span>logs</span>
+                        <span>pandas</span>
+                        <span>performance</span>
+                    </div>
+                </header>
+
+                <p class="lede">
+                    Same question, same file, same answer:
+                    <strong>899,041 matching rows</strong>. pandas needed
+                    <strong>2,500 MB of RAM</strong> to produce it. rugo needed
+                    <strong>5 MB</strong> — 500× less — and finished 11× sooner.
+                    If you have ever had a log-analysis script die in a 512 MB
+                    container, that ratio is the whole story.
+                </p>
+
+                <p>
+                    We needed rolling 1-hour average response times for the
+                    <code>/api/data</code> endpoint, computed from 1 GB of JSONL
+                    traffic logs, on an M3 MacBook. Three approaches, all
+                    returning identical results:
+                </p>
+
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>Time</th>
+                                <th>Peak memory</th>
+                                <th>Rows matched</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>grep + Python</td>
+                                <td>6.98 s</td>
+                                <td>~42 MB</td>
+                                <td>899,041</td>
+                            </tr>
+                            <tr>
+                                <td>pandas</td>
+                                <td class="lose">13.37 s</td>
+                                <td class="lose">~2,500 MB</td>
+                                <td>899,041</td>
+                            </tr>
+                            <tr class="highlight">
+                                <td><strong>rugo</strong></td>
+                                <td class="win">1.23 s</td>
+                                <td class="win">~5 MB</td>
+                                <td>899,041</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p>
+                    The row count is the part that makes the rest of the table
+                    worth reading. It is easy to look fast by doing less work,
+                    or by quietly dropping rows on a parse error. All three
+                    approaches agreed on the count, and agreed on the overall
+                    average response time to within 0.01 ms. The speed and
+                    memory differences are not a difference in what was
+                    computed.
+                </p>
+
+                <h2>The problem</h2>
+
+                <p>
+                    The logs are JSONL — one JSON object per line. Each line
+                    looks like this:
+                </p>
+
+                <pre><code>{"timestamp": "2026-06-15T14:32:11", "url": "/api/data", "method": "GET",
+ "status": 200, "response_ms": 142.3, "user_agent": "Mozilla/...",
+ "bytes_sent": 12450}</code></pre>
+
+                <p>
+                    After 30 days a single file is over 1 GB, roughly 6 million
+                    entries. We want rolling 1-hour average response times for
+                    <code>/api/data</code> — which tells us whether latency is
+                    trending up, not merely what the average was overall. About
+                    15% of traffic hits that endpoint, and we need 3 of the 8
+                    fields.
+                </p>
+
+                <p>
+                    Those two ratios — 3 of 8 columns, 15% of rows — are what
+                    the rest of this article is about.
+                </p>
+
+                <h2>Approach 1: grep + Python</h2>
+
+                <p>grep is the obvious first move for searching logs:</p>
+
+                <pre><span class="k">import</span> subprocess
+<span class="k">import</span> json
+
+result = subprocess.<span class="f">run</span>(
+    [<span class="s">"grep"</span>, <span class="s">"/api/data"</span>, <span class="s">"logs.jsonl"</span>],
+    capture_output=<span class="n">True</span>, text=<span class="n">True</span>,
+)
+
+entries = []
+<span class="k">for</span> line <span class="k">in</span> result.stdout.<span class="f">split</span>(<span class="s">"\n"</span>):
+    <span class="k">if</span> line:
+        entry = json.<span class="f">loads</span>(line)
+        <span class="k">if</span> entry[<span class="s">"url"</span>] == <span class="s">"/api/data"</span>:
+            entries.<span class="f">append</span>(entry)</pre>
+
+                <p>
+                    The split between the two halves matters. grep does its
+                    filtering in about <strong>0.4 seconds</strong> — it is
+                    genuinely excellent at text matching. But every matched line
+                    then has to be parsed into a Python dictionary, and that
+                    costs roughly <strong>6.5 seconds</strong>.
+                </p>
+
+                <p>
+                    <strong>7 seconds total</strong>, and that is before you
+                    write a single line of the rolling-average calculation.
+                    Memory stays reasonable at ~42 MB because the work is
+                    streamed, but you are hand-rolling the statistics yourself.
+                </p>
+
+                <h2>Approach 2: pandas</h2>
+
+                <p>pandas is the standard answer for time-series analysis:</p>
+
+                <pre><span class="k">import</span> pandas <span class="k">as</span> pd
+
+df = pd.<span class="f">read_json</span>(<span class="s">"logs.jsonl"</span>, lines=<span class="n">True</span>)
+df = df[df[<span class="s">"url"</span>] == <span class="s">"/api/data"</span>]
+df = df.<span class="f">sort_values</span>(<span class="s">"timestamp"</span>)
+
+df[<span class="s">"ts"</span>] = pd.<span class="f">to_datetime</span>(df[<span class="s">"timestamp"</span>])
+df = df.<span class="f">set_index</span>(<span class="s">"ts"</span>)
+df[<span class="s">"rolling_avg"</span>] = df[<span class="s">"response_ms"</span>].<span class="f">rolling</span>(<span class="s">"1h"</span>).<span class="f">mean</span>()</pre>
+
+                <p>
+                    It works, and it is by far the most expressive of the three.
+                    But <code>read_json</code> parses every column of every row,
+                    and the entire 1 GB file is materialised in memory before
+                    the first filter runs.
+                </p>
+
+                <p>
+                    <strong>13.4 seconds, and ~2,500 MB peak RSS.</strong> The
+                    filter on the second line discards 85% of what the first
+                    line just spent two and a half gigabytes building. This is
+                    the reason log-processing scripts fall over in serverless
+                    functions and small containers: not that pandas is slow, but
+                    that its memory ceiling is set by the size of your input
+                    file rather than the size of your answer.
+                </p>
+
+                <h2>Approach 3: rugo</h2>
+
+                <p>
+                    <a href="../index.html">rugo</a> is built around a different
+                    principle: <strong>read less data in the first place.</strong>
+                </p>
+
+                <pre><span class="k">from</span> rugo <span class="k">import</span> jsonl
+
+timestamps = []
+values = []
+
+<span class="k">with</span> jsonl.<span class="f">read_jsonl</span>(
+    <span class="s">"logs.jsonl"</span>,
+    columns=[<span class="s">"url"</span>, <span class="s">"response_ms"</span>, <span class="s">"timestamp"</span>],
+    predicates=[(<span class="s">"url"</span>, <span class="s">"=="</span>, <span class="s">"/api/data"</span>)],
+) <span class="k">as</span> reader:
+    <span class="k">for</span> morsel <span class="k">in</span> reader:
+        timestamps.<span class="f">extend</span>(morsel.<span class="f">column</span>(<span class="s">"timestamp"</span>).<span class="f">to_pylist</span>())
+        values.<span class="f">extend</span>(morsel.<span class="f">column</span>(<span class="s">"response_ms"</span>).<span class="f">to_pylist</span>())</pre>
+
+                <p>Two things happen before any data becomes a Python object:</p>
+
+                <ol>
+                    <li>
+                        <strong>Column projection</strong> — only 3 of the 8
+                        fields are read. <code>method</code>,
+                        <code>status</code>, <code>user_agent</code> and
+                        <code>bytes_sent</code> are never parsed.
+                    </li>
+                    <li>
+                        <strong>Predicate pushdown</strong> — only rows where
+                        <code>url == "/api/data"</code> are parsed. At ~15% of
+                        traffic, 85% of the file never becomes an object at all.
+                    </li>
+                </ol>
+
+                <p>
+                    Results arrive as Morsels — batches of rows streamed from
+                    the file — so memory is bounded by the batch, not the file.
+                    Peak RSS was <strong>~5 MB</strong>.
+                </p>
+
+                <p><strong>1.23 seconds.</strong> Same answer.</p>
+
+                <h2>The numbers</h2>
+
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>Time</th>
+                                <th>Entries</th>
+                                <th>Avg response (ms)</th>
+                                <th>Peak memory</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>grep + Python</td>
+                                <td>6.98 s</td>
+                                <td>899,041</td>
+                                <td>1,488.77</td>
+                                <td>~42 MB</td>
+                            </tr>
+                            <tr>
+                                <td>pandas</td>
+                                <td class="lose">13.37 s</td>
+                                <td>899,041</td>
+                                <td>1,488.78</td>
+                                <td class="lose">~2,500 MB</td>
+                            </tr>
+                            <tr class="highlight">
+                                <td><strong>rugo</strong></td>
+                                <td class="win">1.23 s</td>
+                                <td>899,041</td>
+                                <td>1,488.77</td>
+                                <td class="win">~5 MB</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p>
+                    The file: 1.05 GB, 6 million log entries, 15% matching
+                    <code>/api/data</code>. All three agree on 899,041 rows and
+                    on the overall average to within 0.01 ms.
+                </p>
+
+                <h2>Why rugo is faster here</h2>
+
+                <p>
+                    It is not that rugo parses JSON faster than pandas. It is
+                    that rugo parses <strong>less</strong> JSON.
+                </p>
+
+                <p>
+                    When the file has 8 columns and you need 3, pandas still
+                    reads and parses all 8. When 15% of rows match your filter,
+                    pandas loads 100% of them first and discards the rest
+                    afterwards. rugo pushes both decisions ahead of the decode,
+                    so the skipped columns and skipped rows are never paid for
+                    in either time or memory.
+                </p>
+
+                <p>
+                    The corollary is the honest limit of the approach: the
+                    advantage scales with selectivity. Ask for every column of
+                    every row and there is nothing to skip, and the gap
+                    collapses. This design wins on selective reads and merely
+                    ties on unselective ones.
+                </p>
+
+                <h2>When to use what</h2>
+
+                <p>
+                    <strong>grep</strong> when you need lines matching a
+                    pattern and you are going to read them as text. Nothing
+                    beats it at that. Just be aware that the moment you add
+                    Python JSON parsing behind it, the pipeline is slower than
+                    rugo.
+                </p>
+
+                <p>
+                    <strong>pandas</strong> when you genuinely need the whole
+                    frame — all columns, no filtering, many operations per row —
+                    and you have the memory. Its ecosystem and expressiveness
+                    are real advantages that neither of the other two match.
+                </p>
+
+                <p>
+                    <strong>rugo</strong> when you need specific columns from
+                    specific rows of a large file, or when your memory ceiling
+                    is fixed and your input size is not.
+                </p>
+
+                <h2>Reproducing this</h2>
+
+                <p>
+                    <code>pip install rugo</code> is the whole install. There
+                    are no runtime dependencies — no PyArrow, no pandas, no
+                    NumPy — and the installed footprint is 11.6 MB with a 30 ms
+                    cold import (linux x86_64, CPython 3.12; see the
+                    <a href="../index.html">footprint comparison</a> for how
+                    that was measured and how it compares).
+                </p>
+
+                <p>
+                    The
+                    <a
+                        href="https://gist.github.com/joocer/b0a69f57a94f24e1e912ee19ccb0665c"
+                        >benchmark script</a
+                    >
+                    is available if you want to run these numbers yourself.
+                    rugo reads and writes Parquet, CSV and JSONL through the
+                    same API shape.
+                </p>
+            </div>
+        </article>
+
+        <footer>
+            <div class="container">
+                <span
+                    >rugo is part of the
+                    <a href="https://opteryx.app/">Opteryx</a> project — Apache
+                    2.0</span
+                >
+                <span>
+                    <a href="https://github.com/mabel-dev/opteryx-core"
+                        >GitHub</a
+                    >
+                    ·
+                    <a href="https://pypi.org/project/rugo/">PyPI</a>
+                </span>
+            </div>
+        </footer>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                document.querySelectorAll("pre").forEach((pre) => {
+                    const btn = document.createElement("button");
+                    btn.className = "copy-btn";
+                    btn.textContent = "copy";
+                    btn.addEventListener("click", () => {
+                        navigator.clipboard
+                            .writeText(pre.innerText)
+                            .then(() => {
+                                btn.textContent = "copied";
+                                btn.classList.add("copied");
+                                setTimeout(() => {
+                                    btn.textContent = "copy";
+                                    btn.classList.remove("copied");
+                                }, 1500);
+                            });
+                    });
+                    pre.appendChild(btn);
+                });
+            });
+        </script>
+    </body>
+</html>

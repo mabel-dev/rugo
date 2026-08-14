@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Blog — rugo</title>
+        <meta
+            name="description"
+            content="Notes on reading data files in Python without PyArrow, pandas or NumPy — benchmarks, footprint measurements, and practical write-ups."
+        />
+        <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+        <link rel="stylesheet" href="../blog.css" />
+    </head>
+    <body>
+        <nav>
+            <a class="nav-logo" href="../index.html">ru<span>go</span></a>
+            <div class="nav-links">
+                <a href="../index.html">Home</a>
+                <a href="index.html">Blog</a>
+                <a href="https://github.com/mabel-dev/opteryx-core/tree/main/rugo"
+                    >Docs</a
+                >
+            </div>
+        </nav>
+
+        <div class="listing">
+            <div class="container">
+                <h1>Blog</h1>
+                <p class="listing-intro">
+                    Working notes on reading data files in Python without
+                    PyArrow, pandas or NumPy. Measurements, not estimates.
+                </p>
+
+                <!-- DRAFT, not yet listed: parquet-in-aws-lambda-without-pyarrow.html
+                     Add its card here once reviewed. -->
+
+                <a class="post-card" href="jsonl-logs-grep-vs-pandas-vs-rugo.html">
+                    <h2>
+                        Analysing 1 GB of JSONL logs in Python: grep vs pandas
+                        vs rugo
+                    </h2>
+                    <p class="post-meta">10 July 2026</p>
+                    <p>
+                        Rolling response-time stats over a gigabyte of traffic
+                        logs, three ways. pandas needed 2,500 MB of RAM; rugo
+                        needed 5 MB. All three returned the same 899,041 rows.
+                    </p>
+                </a>
+            </div>
+        </div>
+
+        <footer>
+            <div class="container">
+                <span
+                    >rugo is part of the
+                    <a href="https://opteryx.app/">Opteryx</a> project — Apache
+                    2.0</span
+                >
+                <span>
+                    <a href="https://github.com/mabel-dev/opteryx-core"
+                        >GitHub</a
+                    >
+                    ·
+                    <a href="https://pypi.org/project/rugo/">PyPI</a>
+                </span>
+            </div>
+        </footer>
+    </body>
+</html>
