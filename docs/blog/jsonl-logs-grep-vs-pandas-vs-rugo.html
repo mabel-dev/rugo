@@ -10,6 +10,13 @@
             name="description"
             content="Rolling response-time stats over 1 GB of JSONL traffic logs, three ways. pandas needed 2,500 MB of RAM. rugo needed 5 MB. All three returned the same 899,041 rows."
         />
+        <!-- This benchmark is also published on the Opteryx engineering blog,
+             which points its canonical here. Self-referencing canonical so both
+             copies name the same winner. -->
+        <link
+            rel="canonical"
+            href="https://rugo.dev/blog/jsonl-logs-grep-vs-pandas-vs-rugo.html"
+        />
         <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
         <link rel="stylesheet" href="../blog.css" />
     </head>
@@ -350,6 +357,18 @@ values = []
                     is available if you want to run these numbers yourself.
                     rugo reads and writes Parquet, CSV and JSONL through the
                     same API shape.
+                </p>
+
+                <p>
+                    These logs come from
+                    <a href="https://opteryx.app/">opteryx.app</a>, and the
+                    original write-up — with more on why the endpoint was being
+                    monitored — is on the Opteryx engineering blog as
+                    <a
+                        href="https://docs.opteryx.app/blog/2026-07-10-log-analytics-with-rugo"
+                        >Monitoring opteryx.app — A Faster Way to Search Web
+                        Traffic Logs</a
+                    >.
                 </p>
             </div>
         </article>
